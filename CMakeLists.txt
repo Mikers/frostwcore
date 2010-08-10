@@ -29,6 +29,11 @@ cmake_policy(SET CMP0005 OLD)
 string(COMPARE EQUAL "${CMAKE_SOURCE_DIR}" "${CMAKE_BINARY_DIR}" BUILDING_IN_SOURCE)
 
 if( BUILDING_IN_SOURCE )
+  message(FATAL_ERROR "
+    This project requires an out of source build. Remove the file 'CMakeCache.txt'
+    found in this directory before continuing, create a separate build directory
+    and run 'cmake path_to_project [options]' from there.
+  ")
 endif()
 
 #
@@ -77,7 +82,6 @@ endif()
 option(SERVERS "Build worldserver and authserver" 1)
 option(SCRIPTS "Build worldserver with scripts included" 1)
 option(TOOLS "Build map/vmap extraction/assembler tools" 0)
-option(CLI "Build worldserver with commandline-interface included" 1)
 option(DEBUG "Build worldserver with additional debug-code included" 0)
 option(SCRIPTPCH "Use precompiled headers when compiling scripts project" 1)
 option(GAMEPCH "Use precompiled headers when compiling game project" 1)
@@ -195,13 +199,6 @@ if( TOOLS )
   message("* Build map/vmap tools  : Yes")
 else()
   message("* Build map/vmap tools  : No  (default)")
-endif()
-
-if( CLI )
-  message("* Build with CLI        : Yes (default)")
-  add_definitions(-DENABLE_CLI)
-else()
-  message("* Build with CLI        : No")
 endif()
 
 if( DEBUG )
