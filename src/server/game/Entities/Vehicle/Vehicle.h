@@ -29,8 +29,6 @@ enum PowerType
 {
     POWER_STEAM     = 61,
     POWER_PYRITE    = 41,
-	POWER_OOZE_POWER = 121,
-	POWER_BLOOD_POWER = 141,	
 };
 
 struct VehicleSeat
@@ -76,6 +74,7 @@ class Vehicle
         void RelocatePassengers(float x, float y, float z, float ang);
         void RemoveAllPassengers();
         void Dismiss();
+        bool IsVehicleInUse() { return m_Seats.begin() != m_Seats.end(); }
 
         SeatMap m_Seats;
 

@@ -1908,8 +1908,6 @@ void AchievementMgr::CompletedAchievement(AchievementEntry const* achievement)
     if (achievement->flags & ACHIEVEMENT_FLAG_COUNTER || HasAchieved(achievement))
         return;
 
-    /* WowArmory Feed Log */
-    GetPlayer()->WriteWowArmoryDatabaseLog(1, achievement->ID);
     SendAchievementEarned(achievement);
     CompletedAchievementData& ca =  m_completedAchievements[achievement->ID];
     ca.date = time(NULL);

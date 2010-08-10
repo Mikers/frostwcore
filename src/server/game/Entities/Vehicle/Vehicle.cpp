@@ -79,14 +79,6 @@ void Vehicle::Install()
                 me->setPowerType(POWER_ENERGY);
                 me->SetMaxPower(POWER_ENERGY, 100);
                 break;
-			case POWER_BLOOD_POWER: //ICC Saurfang blood power
-                me->setPowerType(POWER_ENERGY);
-                me->SetMaxPower(POWER_ENERGY, 100);			
-                break;
-			case POWER_OOZE_POWER: //ICC Abomination ooze power
-                me->setPowerType(POWER_ENERGY);
-                me->SetMaxPower(POWER_ENERGY, 100);			
-                break;
             case POWER_PYRITE:
                 me->setPowerType(POWER_ENERGY);
                 me->SetMaxPower(POWER_ENERGY, 50);
@@ -309,18 +301,7 @@ bool Vehicle::AddPassenger(Unit *unit, int8 seatId)
     }
 
     if (seat->second.seatInfo->m_flags && !(seat->second.seatInfo->m_flags & 0x400))
-	{
-        switch (GetVehicleInfo()->m_ID)
-        {
-            case 342: //Ignis
-            case 353: //XT-002
-            case 380: //Kologarn's Right Arm
-                break;
-            default:
-                unit->addUnitState(UNIT_STAT_ONVEHICLE);
-                break;
-        }
-	}
+        unit->addUnitState(UNIT_STAT_ONVEHICLE);
 
     //SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PLAYER_CONTROLLED);
 
