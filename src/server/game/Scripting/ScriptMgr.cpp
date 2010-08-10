@@ -26,7 +26,6 @@
 #include "ProgressBar.h"
 #include "ScriptLoader.h"
 #include "ScriptSystem.h"
-#include "../Customs/ScNpcTeleport.h"
 
 // Utility macros to refer to the script registry.
 #define SCR_REG_MAP(T) ScriptRegistry<T>::ScriptMap
@@ -137,6 +136,7 @@ void DoScriptText(int32 iTextEntry, WorldObject* pSource, Unit* pTarget)
 }
 
 ScriptMgr::ScriptMgr()
+    : _scriptCount(0)
 {
 }
 
@@ -195,7 +195,6 @@ void ScriptMgr::LoadDatabase()
     sScriptSystemMgr.LoadScriptTexts();
     sScriptSystemMgr.LoadScriptTextsCustom();
     sScriptSystemMgr.LoadScriptWaypoints();
-	sScriptSystemMgr.LoadNpcTele();
 }
 
 struct TSpellSummary
@@ -1108,7 +1107,7 @@ WorldMapScript::WorldMapScript(const char* name, uint32 mapId)
 }
 
 InstanceMapScript::InstanceMapScript(const char* name, uint32 mapId)
-    : ScriptObject(name), MapScript<InstanceMap>(0)
+    : ScriptObject(name), MapScript<InstanceMap>(mapId)
 {
     if (GetEntry() && !GetEntry()->IsDungeon())
         sLog.outError("InstanceMapScript for map %u is invalid.", mapId);
@@ -1211,7 +1210,7 @@ AchievementCriteriaScript::AchievementCriteriaScript(const char* name)
 
 // Instantiate static members of ScriptMgr::ScriptRegistry.
 template<class TScript> std::map<uint32, TScript*> ScriptMgr::ScriptRegistry<TScript>::ScriptPointerList;
-template<class TScript> uint32 ScriptMgr::ScriptRegistry<TScript>::_scriptIdCounter;
+template<class TScript> uint32 ScriptMgr::ScriptRegistry<TScript>::_scriptIdCounter = 0;
 
 // Specialize for each script type class like so:
 template class ScriptMgr::ScriptRegistry<SpellHandlerScript>;

@@ -33,14 +33,11 @@ set(scripts_STAT_SRCS
   ${scripts_spells}
   ${scripts_examples}
   ${scripts_outdoorpvp}
-  Custom/guildmaster.cpp
-  Custom/npc_teleport.cpp
   ../game/AI/ScriptedAI/ScriptedEscortAI.cpp
   ../game/AI/ScriptedAI/ScriptedCreature.cpp
   ../game/AI/ScriptedAI/ScriptedFollowerAI.cpp
   ../game/AI/ScriptedAI/ScriptedGuardAI.cpp
   ../game/AI/ScriptedAI/ScriptedSimpleAI.cpp
-  ../game/BossSpellWorker/BossSpellWorker.cpp
 )
 
 if(MSVC)
@@ -85,11 +82,9 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/src/server/game/AI/ScriptedAI
   ${CMAKE_SOURCE_DIR}/src/server/game/AuctionHouse
   ${CMAKE_SOURCE_DIR}/src/server/game/Battlegrounds
-  ${CMAKE_SOURCE_DIR}/src/server/game/BossSpellWorker
   ${CMAKE_SOURCE_DIR}/src/server/game/Calendar
   ${CMAKE_SOURCE_DIR}/src/server/game/Chat
   ${CMAKE_SOURCE_DIR}/src/server/game/Conditions
-  ${CMAKE_SOURCE_DIR}/src/server/game/Customs
   ${CMAKE_SOURCE_DIR}/src/server/shared/Configuration
   ${CMAKE_SOURCE_DIR}/src/server/game/Combat
   ${CMAKE_SOURCE_DIR}/src/server/game/DataStores
@@ -155,3 +150,4 @@ if( SCRIPTPCH )
     add_native_precompiled_header(scripts ${CMAKE_SOURCE_DIR}/src/server/scripts/PrecompiledHeaders/ScriptPCH)
   endif()
 endif()
+

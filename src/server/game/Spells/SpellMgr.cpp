@@ -29,8 +29,6 @@
 #include "BattlegroundMgr.h"
 #include "CreatureAI.h"
 #include "MapManager.h"
-#include "OutdoorPvPWG.h"
-#include "OutdoorPvPMgr.h"
 
 bool IsAreaEffectTarget[TOTAL_SPELL_TARGETS];
 SpellEffectTargetTypes EffectTargetType[TOTAL_SPELL_EFFECTS];
@@ -760,13 +758,8 @@ bool SpellMgr::_isPositiveEffect(uint32 spellId, uint32 effIndex, bool deep) con
         case SPELLFAMILY_GENERIC:
             switch (spellId)
             {
-			    case 2479:
                 case 34700: // Allergic Reaction
                 case 61987: // Avenging Wrath Marker
-				case 63322: // Saronite vapors
-					return false;
-				case 47585:
-					return false;
                 case 61988: // Divine Shield exclude aura
                     return false;
                 case 30877: // Tag Murloc
@@ -807,10 +800,6 @@ bool SpellMgr::_isPositiveEffect(uint32 spellId, uint32 effIndex, bool deep) con
         default:
             break;
     }
-
-    // Amplify Magic / Dampen Magic
-    if (spellproto->SpellFamilyName == SPELLFAMILY_MAGE && spellproto->SpellFamilyFlags[0] & 0x2000 && spellproto->SpellFamilyFlags[2] & 0x8)
-        return true;
 
     // Special case: effects which determine positivity of whole spell
     for (uint8 i = 0; i<MAX_SPELL_EFFECTS; ++i)
@@ -2987,13 +2976,6 @@ int32 GetDiminishingReturnsLimitDuration(DiminishingGroup group, SpellEntry cons
                 return 6 * IN_MILLISECONDS;
             break;
         }
-		case SPELLFAMILY_WARLOCK:
-        {
-            // Banish - limit to 6 seconds in PvP (3.1)
-            if (spellproto->SpellFamilyFlags[1] & 0x8000000)
-                return 6 * IN_MILLISECONDS;
-            break;
-        }
         case SPELLFAMILY_DRUID:
         {
             // Faerie Fire - limit to 40 seconds in PvP (3.1)
@@ -3080,8 +3062,6 @@ DiminishingReturnsType GetDiminishingReturnsGroupType(DiminishingGroup group)
 
 bool SpellArea::IsFitToRequirements(Player const* player, uint32 newZone, uint32 newArea) const
 {
-	OutdoorPvPWG *pvpWG = (OutdoorPvPWG*)sOutdoorPvPMgr.GetOutdoorPvPToZoneId(4197);
-
     if (gender != GENDER_NONE)                   // not in expected gender
         if (!player || gender != player->getGender())
             return false;
@@ -3105,23 +3085,6 @@ bool SpellArea::IsFitToRequirements(Player const* player, uint32 newZone, uint32
     if (auraSpell)                               // not have expected aura
         if (!player || auraSpell > 0 && !player->HasAura(auraSpell) || auraSpell < 0 && player->HasAura(-auraSpell))
             return false;
-    // Extra conditions
-    switch(spellId)
-    {
-        case 58730: // No fly Zone - Wintergrasp
-            if ((pvpWG->isWarTime()==false) || !player || !player->HasAuraType(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED) && !player->HasAuraType(SPELL_AURA_FLY)
-               || player->HasAura(45472) || player->HasAura(44795))
-                return false;
-            break;
-       case 58045: // Essence of Wintergrasp - Wintergrasp
-        case 57940: // Essence of Wintergrasp - Northrend
-            if (!player || player->GetTeamId() != sWorld.getWorldState(WORLDSTATE_WINTERGRASP_CONTROLING_FACTION))
-                return false;
-            break;
-   }
-
-    return true; 
-
 
     // Extra conditions -- leaving the possibility add extra conditions...
     switch(spellId)
@@ -3612,13 +3575,6 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->EffectImplicitTargetA[1] = TARGET_UNIT_TARGET_ENEMY;
             count++;
             break;
-        // Natural Shapeshifter
-        case 16834:
-        case 16835: 
-        {
-            SpellEntry const* spellInf = sSpellStore.LookupEntry(16833);
-            spellInfo->DurationIndex=spellInf->DurationIndex;
-        }
         // Heroism
         case 32182:
             spellInfo->excludeCasterAuraSpell = 57723; // Exhaustion
@@ -3842,11 +3798,6 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->AttributesEx5 |= SPELL_ATTR_EX5_START_PERIODIC_AT_APPLY;
             count++;
             break;
-		// spellsteal
-        case 30449:
-            spellInfo->AttributesEx7 |= SPELL_ATTR_EX7_DISPEL_CHARGES;
-            count++;
-            break;
         case 41013:     // Parasitic Shadowfiend Passive
             spellInfo->EffectApplyAuraName[0] = 4; // proc debuff, and summon infinite fiends
             count++;
@@ -3888,20 +3839,6 @@ void SpellMgr::LoadSpellCustomAttr()
             spellInfo->AttributesEx |= SPELL_ATTR_EX_DISPEL_AURAS_ON_IMMUNITY;
             count++;
             break;
-		case 30708:     // totem of wrath debuff
-            spellInfo->AttributesEx3 |= SPELL_ATTR_EX3_NO_INITIAL_AGGRO;
-            count++;
-            break;	
-		case 62345:     // Ram (Ulduar Siege)
-        case 62308:     // Ram (Ulduar Demolisher)
-            spellInfo->Effect[0] = 0;
-            count++;
-            break;
-        case 63676:     // Focused Eyebeam Visual 2
-        case 63702:     // Focused Eyebeam Visual Right Eye
-            spellInfo->EffectImplicitTargetA[0] = 92;
-            count++;
-            break;
         default:
             break;
         }
@@ -3938,18 +3875,6 @@ void SpellMgr::LoadSpellCustomAttr()
                     break;
                 count++;
                 break;
-			case SPELLFAMILY_WARLOCK:
-				switch(spellInfo->Id)
-				{
-					//corruption should be affected by everlasting affliction
-					case 172: case 6222: case 6223: case 7648: //Corruption spellIDs
-					case 11671: case 11672: case 25311: //Corruption spellIDs
-					case 27216: case 47812: case 47813: //Corruption spellIDs
-						spellInfo->SpellFamilyFlags[1] |= 256;
-						count++;
-					break;
-				}
-				break;
         }
     }
 

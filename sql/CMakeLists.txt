@@ -2,7 +2,6 @@ add_subdirectory(updates)
 add_subdirectory(scripts)
 add_subdirectory(base)
 add_subdirectory(create)
-add_subdirectory(ZC2)
 
 ########### install files ###############
 

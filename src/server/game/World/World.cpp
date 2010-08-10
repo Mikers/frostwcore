@@ -49,7 +49,6 @@
 #include "CreatureAIRegistry.h"
 #include "BattlegroundMgr.h"
 #include "OutdoorPvPMgr.h"
-#include "OutdoorPvPWG.h"
 #include "TemporarySummon.h"
 #include "WaypointMovementGenerator.h"
 #include "VMapFactory.h"
@@ -471,13 +470,9 @@ void World::LoadConfigSettings(bool reload)
     rate_values[RATE_DROP_ITEM_ARTIFACT]   = sConfig.GetFloatDefault("Rate.Drop.Item.Artifact", 1.0f);
     rate_values[RATE_DROP_ITEM_REFERENCED] = sConfig.GetFloatDefault("Rate.Drop.Item.Referenced", 1.0f);
     rate_values[RATE_DROP_MONEY]  = sConfig.GetFloatDefault("Rate.Drop.Money", 1.0f);
-    rate_values[RATE_XP_KILL]            = sConfig.GetFloatDefault("Rate.XP.Kill", 1.0f);
-    rate_values[RATE_XP_KILL_PREMIUM]    = sConfig.GetFloatDefault("Rate.XP.Kill.Premium", 1.0f);
-    rate_values[RATE_XP_QUEST]           = sConfig.GetFloatDefault("Rate.XP.Quest", 1.0f);
-    rate_values[RATE_XP_QUEST_PREMIUM]   = sConfig.GetFloatDefault("Rate.XP.Quest.Premium", 1.0f);
-    rate_values[RATE_XP_EXPLORE]         = sConfig.GetFloatDefault("Rate.XP.Explore", 1.0f);
-    rate_values[RATE_XP_EXPLORE_PREMIUM] = sConfig.GetFloatDefault("Rate.XP.Explore.Premium", 1.0f);
-
+    rate_values[RATE_XP_KILL]     = sConfig.GetFloatDefault("Rate.XP.Kill", 1.0f);
+    rate_values[RATE_XP_QUEST]    = sConfig.GetFloatDefault("Rate.XP.Quest", 1.0f);
+    rate_values[RATE_XP_EXPLORE]  = sConfig.GetFloatDefault("Rate.XP.Explore", 1.0f);
     rate_values[RATE_REPAIRCOST]  = sConfig.GetFloatDefault("Rate.RepairCost", 1.0f);
     if (rate_values[RATE_REPAIRCOST] < 0.0f)
     {
@@ -839,18 +834,6 @@ void World::LoadConfigSettings(bool reload)
         sLog.outError("StartArenaPoints (%i) must be in range 0..MaxArenaPoints(%u). Set to %u.",
             m_configs[CONFIG_START_ARENA_POINTS],m_configs[CONFIG_MAX_ARENA_POINTS],m_configs[CONFIG_MAX_ARENA_POINTS]);
         m_configs[CONFIG_START_ARENA_POINTS] = m_configs[CONFIG_MAX_ARENA_POINTS];
-    }
-    rate_values[RATE_PVP_RANK_EXTRA_HONOR] = sConfig.GetFloatDefault("PvPRank.Rate.ExtraHonor", 1);
-    std::string s_pvp_ranks = sConfig.GetStringDefault("PvPRank.HKPerRank", "10,50,100,200,450,750,1300,2000,3500,6000,9500,15000,21000,30000");
-    char *c_pvp_ranks = const_cast<char*>(s_pvp_ranks.c_str());
-    for (int i = 0; i !=HKRANKMAX; i++)
-    {
-        if (i==0)
-            pvp_ranks[0] = 0;
-        else if (i==1)
-            pvp_ranks[1] = atoi(strtok (c_pvp_ranks, ","));
-        else
-            pvp_ranks[i] = atoi(strtok (NULL, ","));
     }
 
     m_configs[CONFIG_ALL_TAXI_PATHS] = sConfig.GetBoolDefault("AllFlightPaths", false);
@@ -1219,18 +1202,6 @@ void World::LoadConfigSettings(bool reload)
     m_configs[CONFIG_PVP_TOKEN_COUNT] = sConfig.GetIntDefault("PvPToken.ItemCount", 1);
     if (m_configs[CONFIG_PVP_TOKEN_COUNT] < 1)
         m_configs[CONFIG_PVP_TOKEN_COUNT] = 1;
-
-    m_configs[CONFIG_OUTDOORPVP_WINTERGRASP_ENABLED]          = sConfig.GetBoolDefault("OutdoorPvP.Wintergrasp.Enabled", true);
-    m_configs[CONFIG_OUTDOORPVP_WINTERGRASP_START_TIME]       = sConfig.GetIntDefault("OutdoorPvP.Wintergrasp.StartTime", 30);
-    m_configs[CONFIG_OUTDOORPVP_WINTERGRASP_BATTLE_TIME]      = sConfig.GetIntDefault("OutdoorPvP.Wintergrasp.BattleTime", 30);
-    m_configs[CONFIG_OUTDOORPVP_WINTERGRASP_INTERVAL]         = sConfig.GetIntDefault("OutdoorPvP.Wintergrasp.Interval", 150);
-    m_configs[CONFIG_OUTDOORPVP_WINTERGRASP_CUSTOM_HONOR]     = sConfig.GetBoolDefault("OutdoorPvP.Wintergrasp.CustomHonorRewards", false);
-    m_configs[CONFIG_OUTDOORPVP_WINTERGRASP_WIN_BATTLE]       = sConfig.GetIntDefault("OutdoorPvP.Wintergrasp.CustomHonorBattleWin", 3000);
-    m_configs[CONFIG_OUTDOORPVP_WINTERGRASP_LOSE_BATTLE]      = sConfig.GetIntDefault("OutdoorPvP.Wintergrasp.CustomHonorBattleLose", 1250);
-    m_configs[CONFIG_OUTDOORPVP_WINTERGRASP_DAMAGED_TOWER]    = sConfig.GetIntDefault("OutdoorPvP.Wintergrasp.CustomHonorDamageTower", 750);
-    m_configs[CONFIG_OUTDOORPVP_WINTERGRASP_DESTROYED_TOWER]  = sConfig.GetIntDefault("OutdoorPvP.Wintergrasp.CustomHonorDestroyedTower", 750);
-    m_configs[CONFIG_OUTDOORPVP_WINTERGRASP_DAMAGED_BUILDING] = sConfig.GetIntDefault("OutdoorPvP.Wintergrasp.CustomHonorDamagedBuilding", 750);
-    m_configs[CONFIG_OUTDOORPVP_WINTERGRASP_INTACT_BUILDING]  = sConfig.GetIntDefault("OutdoorPvP.Wintergrasp.CustomHonorIntactBuilding", 1500);
 
     m_configs[CONFIG_NO_RESET_TALENT_COST] = sConfig.GetBoolDefault("NoResetTalentsCost", false);
     m_configs[CONFIG_SHOW_KICK_IN_WORLD] = sConfig.GetBoolDefault("ShowKickInWorld", false);
@@ -2743,30 +2714,4 @@ uint64 World::getWorldState(uint32 index) const
 {
     WorldStatesMap::const_iterator it = m_worldstates.find(index);
     return it != m_worldstates.end() ? it->second : 0;
-}
-
-void World::SendWintergraspState()
-{
-    OutdoorPvPWG *pvpWG = (OutdoorPvPWG*)sOutdoorPvPMgr.GetOutdoorPvPToZoneId(4197);
-    if (!pvpWG)
-        return;
-
-    for (SessionMap::const_iterator itr = m_sessions.begin(); itr != m_sessions.end(); ++itr)
-    {
-        if (!itr->second || !itr->second->GetPlayer() || !itr->second->GetPlayer()->IsInWorld())
-            continue;
-
-            if (pvpWG->isWarTime())
-            {
-                // "Battle in progress"
-                itr->second->GetPlayer()->SendUpdateWorldState(ClockWorldState[1], (time(NULL)));
-            } else
-                // Time to next battle
-            {
-                pvpWG->SendInitWorldStatesTo(itr->second->GetPlayer());
-                itr->second->GetPlayer()->SendUpdateWorldState(ClockWorldState[1], (time(NULL) + pvpWG->GetTimer()));
-                // Hide unneeded info which in center of screen
-                itr->second->GetPlayer()->SendInitWorldStates(itr->second->GetPlayer()->GetZoneId(), itr->second->GetPlayer()->GetAreaId());
-            }
-    }
 }

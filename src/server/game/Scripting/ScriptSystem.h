@@ -67,7 +67,6 @@ class SystemMgr
         void LoadScriptTexts();
         void LoadScriptTextsCustom();
         void LoadScriptWaypoints();
-		void LoadNpcTele();
 
         //Retrive from storage
         StringTextData const* GetTextData(int32 uiTextId) const

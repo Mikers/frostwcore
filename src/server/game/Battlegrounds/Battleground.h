@@ -18,8 +18,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef __Battleground_H
-#define __Battleground_H
+#ifndef __BATTLEGROUND_H
+#define __BATTLEGROUND_H
 
 #include "Common.h"
 #include "SharedDefines.h"
@@ -100,7 +100,7 @@ enum BattlegroundSpells
     SPELL_RECENTLY_DROPPED_FLAG     = 42792,                // Recently Dropped Flag
     SPELL_AURA_PLAYER_INACTIVE      = 43681,                // Inactive
     SPELL_HONORABLE_DEFENDER_25Y    = 68652,                // +50% honor when standing at a capture point that you control, 25yards radius (added in 3.2)
-    SPELL_HONORABLE_DEFENDER_60Y    = 66157                 // +50% honor when standing at a capture point that you control, 60yards radius (added in 3.2), probably for 40+ player Battlegrounds
+    SPELL_HONORABLE_DEFENDER_60Y    = 66157                 // +50% honor when standing at a capture point that you control, 60yards radius (added in 3.2), probably for 40+ player battlegrounds
 };
 
 enum BattlegroundTimeIntervals
@@ -110,7 +110,6 @@ enum BattlegroundTimeIntervals
     INVITATION_REMIND_TIME          = 20000,                // ms
     INVITE_ACCEPT_WAIT_TIME         = 40000,                // ms
     TIME_TO_AUTOREMOVE              = 120000,               // ms
-	ARENA_TIME_LIMIT                = 2700,                 // secs
     MAX_OFFLINE_TIME                = 300,                  // secs
     RESPAWN_ONE_DAY                 = 86400,                // secs
     RESPAWN_IMMEDIATELY             = 0,                    // secs
@@ -211,10 +210,7 @@ enum ScoreType
     SCORE_SECONDARY_OBJECTIVES  = 17,
     //SOTA
     SCORE_DESTROYED_DEMOLISHER  = 18,
-    SCORE_DESTROYED_WALL        = 19,
-    /* WoWArmory */
-    SCORE_DAMAGE_TAKEN          = 20,
-    SCORE_HEALING_TAKEN         = 21
+    SCORE_DESTROYED_WALL        = 19
 };
 
 enum ArenaType
@@ -226,7 +222,7 @@ enum ArenaType
 
 enum BattlegroundType
 {
-    TYPE_Battleground     = 3,
+    TYPE_BATTLEGROUND     = 3,
     TYPE_ARENA            = 4
 };
 
@@ -274,20 +270,20 @@ enum BG_OBJECT_DMG_HIT_TYPE
 enum GroupJoinBattlegroundResult
 {
     // positive values are indexes in BattlemasterList.dbc
-    ERR_GROUP_JOIN_BATTLEGROUND_FAIL        = 0,            // Your group has joined a Battleground queue, but you are not eligible (showed for non existing BattlemasterList.dbc indexes)
+    ERR_GROUP_JOIN_BATTLEGROUND_FAIL        = 0,            // Your group has joined a battleground queue, but you are not eligible (showed for non existing BattlemasterList.dbc indexes)
     ERR_BATTLEGROUND_NONE                   = -1,           // not show anything
-    ERR_GROUP_JOIN_BATTLEGROUND_DESERTERS   = -2,           // You cannot join the Battleground yet because you or one of your party members is flagged as a Deserter.
+    ERR_GROUP_JOIN_BATTLEGROUND_DESERTERS   = -2,           // You cannot join the battleground yet because you or one of your party members is flagged as a Deserter.
     ERR_ARENA_TEAM_PARTY_SIZE               = -3,           // Incorrect party size for this arena.
     ERR_BATTLEGROUND_TOO_MANY_QUEUES        = -4,           // You can only be queued for 2 battles at once
     ERR_BATTLEGROUND_CANNOT_QUEUE_FOR_RATED = -5,           // You cannot queue for a rated match while queued for other battles
     ERR_BATTLEDGROUND_QUEUED_FOR_RATED      = -6,           // You cannot queue for another battle while queued for a rated arena match
     ERR_BATTLEGROUND_TEAM_LEFT_QUEUE        = -7,           // Your team has left the arena queue
-    ERR_BATTLEGROUND_NOT_IN_Battleground    = -8,           // You can't do that in a Battleground.
+    ERR_BATTLEGROUND_NOT_IN_BATTLEGROUND    = -8,           // You can't do that in a battleground.
     ERR_BATTLEGROUND_JOIN_XP_GAIN           = -9,           // wtf, doesn't exist in client...
-    ERR_BATTLEGROUND_JOIN_RANGE_INDEX       = -10,          // Cannot join the queue unless all members of your party are in the same Battleground level range.
+    ERR_BATTLEGROUND_JOIN_RANGE_INDEX       = -10,          // Cannot join the queue unless all members of your party are in the same battleground level range.
     ERR_BATTLEGROUND_JOIN_TIMED_OUT         = -11,          // %s was unavailable to join the queue. (uint64 guid exist in client cache)
     ERR_BATTLEGROUND_JOIN_FAILED            = -12,          // Join as a group failed (uint64 guid doesn't exist in client cache)
-    ERR_LFG_CANT_USE_BATTLEGROUND           = -13,          // You cannot queue for a Battleground or arena while using the dungeon system.
+    ERR_LFG_CANT_USE_BATTLEGROUND           = -13,          // You cannot queue for a battleground or arena while using the dungeon system.
     ERR_IN_RANDOM_BG                        = -14,          // Can't do that while in a Random Battleground queue.
     ERR_IN_NON_RANDOM_BG                    = -15,          // Can't queue for Random Battleground while in another Battleground queue.
 };
@@ -306,8 +302,6 @@ class BattlegroundScore
         uint32 BonusHonor;
         uint32 DamageDone;
         uint32 HealingDone;
-        uint32 DamageTaken;
-        uint32 HealingTaken;
 };
 
 enum BGHonorMode
@@ -321,10 +315,10 @@ enum BGHonorMode
 
 /*
 This class is used to:
-1. Add player to Battleground
-2. Remove player from Battleground
-3. some certain cases, same for all Battlegrounds
-4. It has properties same for all Battlegrounds
+1. Add player to battleground
+2. Remove player from battleground
+3. some certain cases, same for all battlegrounds
+4. It has properties same for all battlegrounds
 */
 class Battleground
 {
@@ -340,7 +334,7 @@ class Battleground
         {
             return true;
         }
-        virtual void Reset();                               // resets all common properties for Battlegrounds, must be implemented and called in BG subclass
+        virtual void Reset();                               // resets all common properties for battlegrounds, must be implemented and called in BG subclass
         virtual void StartingEventCloseDoors() {}
         virtual void StartingEventOpenDoors() {}
         virtual void ResetBGSubclass()                      // must be implemented in BG subclass
@@ -408,7 +402,7 @@ class Battleground
         void SetMaxPlayersPerTeam(uint32 MaxPlayers) { m_MaxPlayersPerTeam = MaxPlayers; }
         void SetMinPlayersPerTeam(uint32 MinPlayers) { m_MinPlayersPerTeam = MinPlayers; }
 
-        void AddToBGFreeSlotQueue();                        //this queue will be useful when more Battlegrounds instances will be available
+        void AddToBGFreeSlotQueue();                        //this queue will be useful when more battlegrounds instances will be available
         void RemoveFromBGFreeSlotQueue();                   //this method could delete whole BG instance, if another free is available
 
         void DecreaseInvitedCount(uint32 team)      { (team == ALLIANCE) ? --m_InvitedAlliance : --m_InvitedHorde; }
@@ -455,7 +449,7 @@ class Battleground
         void SetBgMap(BattlegroundMap* map) { m_Map = map; }
         BattlegroundMap* GetBgMap()
         {
-			ASSERT(m_Map);
+            ASSERT(m_Map);
             return m_Map;
         }
 
@@ -470,7 +464,7 @@ class Battleground
         }
 
         /* Packet Transfer */
-        // method that should fill worldpacket with actual world states (not yet implemented for all Battlegrounds!)
+        // method that should fill worldpacket with actual world states (not yet implemented for all battlegrounds!)
         virtual void FillInitialWorldStates(WorldPacket& /*data*/) {}
         void SendPacketToTeam(uint32 TeamID, WorldPacket *packet, Player *sender = NULL, bool self = true);
         void SendPacketToAll(WorldPacket *packet);
@@ -621,7 +615,6 @@ class Battleground
         uint32 m_ClientInstanceID;                          //the instance-id which is sent to the client and without any other internal use
         uint32 m_StartTime;
         int32 m_EndTime;                                    // it is set to 120000 when bg is ending and it decreases itself
-		int32 m_ArenaTimeLimit;                             // There is a 47 minute time limit for Arena matches.
         uint32 m_LastResurrectTime;
         BattlegroundBracketId m_BracketId;
         uint8  m_ArenaType;                                 // 2=2v2, 3=3v3, 5=5v5
@@ -640,7 +633,7 @@ class Battleground
         std::deque<uint64> m_OfflineQueue;                  // Player GUID
 
         /* Invited counters are useful for player invitation to BG - do not allow, if BG is started to one faction to have 2 more players than another faction */
-        /* Invited counters will be changed only when removing already invited player from queue, removing player from Battleground and inviting player to BG */
+        /* Invited counters will be changed only when removing already invited player from queue, removing player from battleground and inviting player to BG */
         /* Invited players counters*/
         uint32 m_InvitedAlliance;
         uint32 m_InvitedHorde;

@@ -17,13 +17,11 @@ file(GLOB_RECURSE sources_Achievements Achievements/*.cpp Achievements/*.h)
 file(GLOB_RECURSE sources_Addons Addons/*.cpp Addons/*.h)
 file(GLOB_RECURSE sources_AI AI/*.cpp AI/*.h)
 file(GLOB_RECURSE sources_AuctionHouse AuctionHouse/*.cpp AuctionHouse/*.h)
-file(GLOB_RECURSE sources_BattleGrounds BattleGrounds/*.cpp BattleGrounds/*.h)
-file(GLOB_RECURSE sources_BossSpellWorker BossSpellWorker/*.cpp BossSpellWorker/*.h)
+file(GLOB_RECURSE sources_Battlegrounds Battlegrounds/*.cpp Battlegrounds/*.h)
 file(GLOB_RECURSE sources_Calendar Calendar/*.cpp Calendar/*.h)
 file(GLOB_RECURSE sources_Chat Chat/*.cpp Chat/*.h)
 file(GLOB_RECURSE sources_Combat Combat/*.cpp Combat/*.h)
 file(GLOB_RECURSE sources_Conditions Conditions/*.cpp Conditions/*.h)
-file(GLOB_RECURSE sources_Customs Customs/*.cpp Customs/*.h)
 file(GLOB_RECURSE sources_DataStores DataStores/*.cpp DataStores/*.h)
 file(GLOB_RECURSE sources_DungeonFinding DungeonFinding/*.cpp DungeonFinding/*.h)
 file(GLOB_RECURSE sources_Entities Entities/*.cpp Entities/*.h)
@@ -62,7 +60,6 @@ set(game_STAT_SRCS
   ${sources_Chat}
   ${sources_Combat}
   ${sources_Conditions}
-  ${sources_Customs}
   ${sources_DataStores}
   ${sources_DungeonFinding}
   ${sources_Entities}
@@ -133,14 +130,12 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/src/server/game/AuctionHouse
   ${CMAKE_SOURCE_DIR}/src/server/game/Battlegrounds
   ${CMAKE_SOURCE_DIR}/src/server/game/Battlegrounds/Zones
-  ${CMAKE_SOURCE_DIR}/src/server/game/BossSpellWorker
   ${CMAKE_SOURCE_DIR}/src/server/game/Calendar
   ${CMAKE_SOURCE_DIR}/src/server/game/Chat
   ${CMAKE_SOURCE_DIR}/src/server/game/Chat/Channels
   ${CMAKE_SOURCE_DIR}/src/server/game/Chat/Commands
   ${CMAKE_SOURCE_DIR}/src/server/game/Combat
   ${CMAKE_SOURCE_DIR}/src/server/game/Conditions
-  ${CMAKE_SOURCE_DIR}/src/server/game/Customs
   ${CMAKE_SOURCE_DIR}/src/server/game/DataStores
   ${CMAKE_SOURCE_DIR}/src/server/game/DungeonFinding
   ${CMAKE_SOURCE_DIR}/src/server/game/Entities
@@ -174,6 +169,7 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/src/server/game/Movement/MovementGenerators
   ${CMAKE_SOURCE_DIR}/src/server/game/Movement/Waypoints
   ${CMAKE_SOURCE_DIR}/src/server/game/OutdoorPvP
+  ${CMAKE_SOURCE_DIR}/src/server/game/OutdoorPvP/Zones
   ${CMAKE_SOURCE_DIR}/src/server/game/Pools
   ${CMAKE_SOURCE_DIR}/src/server/game/PrecompiledHeaders
   ${CMAKE_SOURCE_DIR}/src/server/game/Quests
@@ -189,7 +185,6 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/src/server/game/Weather
   ${CMAKE_SOURCE_DIR}/src/server/game/World
   ${CMAKE_SOURCE_DIR}/src/server/scripts/PrecompiledHeaders
-  ${CMAKE_SOURCE_DIR}/src/server/scripts/OutdoorPvP
 )
 
 add_library(game STATIC ${game_STAT_SRCS})

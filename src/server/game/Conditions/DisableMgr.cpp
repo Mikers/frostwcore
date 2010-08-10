@@ -238,9 +238,7 @@ bool DisableMgr::IsDisabledFor(DisableType type, uint32 entry, Unit const* pUnit
                 if (mapEntry->IsDungeon())
                 {
                     uint8 disabledModes = itr->second;
-                    Difficulty targetDifficulty = pPlayer->GetDifficulty(mapEntry->IsRaid());
-                    GetDownscaledMapDifficultyData(entry, targetDifficulty);
-                    switch(targetDifficulty)
+                    switch(mapEntry->IsRaid() ? pPlayer->GetRaidDifficulty() : pPlayer->GetDungeonDifficulty())
                     {
                         case DUNGEON_DIFFICULTY_NORMAL:
                             return disabledModes & DUNGEON_STATUSFLAG_NORMAL;
