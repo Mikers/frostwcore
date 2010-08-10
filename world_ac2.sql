@@ -1,1 +1,0 @@
-INSERT INTO `trinity_string` VALUES ('12000', 'Cheater DETECTED> %s  ID:( %u ) Reason> %s', '', '', '', '', '', '', '', 'ЧИТЕР обнаружен:> %s ID:( %u) Причина> %s');
