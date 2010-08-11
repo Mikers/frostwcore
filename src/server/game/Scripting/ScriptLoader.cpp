@@ -389,9 +389,6 @@ void AddSC_boss_kologarn();
 void AddSC_boss_assembly_of_iron();
 void AddSC_boss_hodir();
 void AddSC_boss_thorim();
-void AddSC_boss_mimiron();
-void AddSC_boss_general_vezax();
-void AddSC_boss_yogg_saron();
 void AddSC_ulduar_teleporter();
 void AddSC_instance_ulduar();
 void AddSC_boss_keleseth();              //Utgarde Keep
@@ -436,20 +433,6 @@ void AddSC_instance_halls_of_reflection();   // Halls of Reflection
 void AddSC_halls_of_reflection();
 void AddSC_boss_falric();
 void AddSC_boss_marwyn();
-void AddSC_boss_blood_queen_lana_thel(); // Icecrown Citadel
-void AddSC_boss_saurfang();
-void AddSC_boss_festergut();
-void AddSC_icecrown_citadel_trash();
-void AddSC_icecrown_teleporter();
-void AddSC_instance_icecrown_citadel();
-void AddSC_boss_deahtwisper();
-void AddSC_boss_marrowgar();
-void AddSC_boss_professor_putricide();
-void AddSC_boss_rat_des_blutes();
-void AddSC_boss_rotface();
-void AddSC_boss_sindragosa();
-void AddSC_boss_lichking();
-void AddSC_boss_valithria();
 
 void AddSC_dalaran();
 void AddSC_borean_tundra();
@@ -1076,9 +1059,6 @@ void AddNorthrendScripts()
     AddSC_boss_assembly_of_iron();
     AddSC_boss_hodir();
     AddSC_boss_thorim();
-    AddSC_boss_mimiron();
-    AddSC_boss_general_vezax();
-    AddSC_boss_yogg_saron();
     AddSC_ulduar_teleporter();
     AddSC_instance_ulduar();
     AddSC_boss_keleseth();              //Utgarde Keep
@@ -1123,20 +1103,6 @@ void AddNorthrendScripts()
     AddSC_halls_of_reflection();
     AddSC_boss_falric();
     AddSC_boss_marwyn();
-    AddSC_boss_blood_queen_lana_thel(); // Icecrown Citadel
-    AddSC_boss_saurfang();
-    AddSC_boss_festergut();
-    AddSC_icecrown_citadel_trash();
-    AddSC_icecrown_teleporter();
-    AddSC_instance_icecrown_citadel();
-    AddSC_boss_deahtwisper();
-    AddSC_boss_marrowgar();
-    AddSC_boss_professor_putricide();
-    AddSC_boss_rat_des_blutes();
-    AddSC_boss_rotface();
-    AddSC_boss_sindragosa();
-    AddSC_boss_lichking();
-    AddSC_boss_valithria();
 
     AddSC_dalaran();
     AddSC_borean_tundra();

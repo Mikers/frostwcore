@@ -500,7 +500,7 @@ void Battleground::Update(uint32 diff)
         if (m_ArenaTimeLimit <= 0)
         {
 			// no winners
-			EndBattleGround(NULL);
+			EndBattleground(NULL);
         }
     }
 
