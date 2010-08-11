@@ -476,11 +476,12 @@ int32 AuraEffect::CalculateAmount(Unit * caster)
             switch(GetSpellProto()->SpellFamilyName)
             {
                 case SPELLFAMILY_MAGE:
-                    // Ice Barrier
-                    if (GetSpellProto()->SpellFamilyFlags[1] & 0x1 && GetSpellProto()->SpellFamilyFlags[2] & 0x8)
-                    {
-                        // +80.68% from sp bonus
+                     // Ice Barrier
+                     if (GetSpellProto()->SpellFamilyFlags[1] & 0x1 && GetSpellProto()->SpellFamilyFlags[2] & 0x8)
+                     {
+						// +80.68% from sp bonus
                         DoneActualBenefit += caster->SpellBaseDamageBonus(GetSpellSchoolMask(m_spellProto)) * 0.8068f;
+
                         // Glyph of Ice Barrier: its weird having a SPELLMOD_ALL_EFFECTS here but its blizzards doing :)
                         // Glyph of Ice Barrier is only applied at the spell damage bonus because it was already applied to the base value in CalculateSpellDamage
                         if (Player* modOwner = caster->GetSpellModOwner())
@@ -497,11 +498,10 @@ int32 AuraEffect::CalculateAmount(Unit * caster)
                     {
                         // +80.68% from sp bonus
                         DoneActualBenefit += caster->SpellBaseDamageBonus(GetSpellSchoolMask(m_spellProto)) * 0.8068f;
-                    }
+                     }
                     break;
                 case SPELLFAMILY_WARLOCK:
-                    // Shadow Ward
-                    if (m_spellProto->SpellFamilyFlags[2] & 0x40)
+                    if(m_spellProto->SpellFamilyFlags[2] & 0x40)
                     {
                         // +80.68% from sp bonus
                         DoneActualBenefit += caster->SpellBaseDamageBonus(GetSpellSchoolMask(m_spellProto)) * 0.8068f;
@@ -516,21 +516,28 @@ int32 AuraEffect::CalculateAmount(Unit * caster)
                         AuraEffect const* pAurEff;
 
                         // Borrowed Time
-                        pAurEff = caster->GetAuraEffect(SPELL_AURA_DUMMY, SPELLFAMILY_PRIEST, 2899, 1);
-                        if (pAurEff)
-                            bonus += (float)pAurEff->GetAmount() / 100.0f;
-
-                        // Twin Disciplines
-                        pAurEff = caster->GetAuraEffect(SPELL_AURA_ADD_PCT_MODIFIER, SPELLFAMILY_PRIEST, 0x400000, 0, 0, caster->GetGUID());
-                        if (pAurEff)
-                            bonus += (float)pAurEff->GetAmount() / 100.0f;
-
-                        // Focused Power
-                        pAurEff = caster->GetAuraEffect(SPELL_AURA_MOD_HEALING_DONE_PERCENT, SPELLFAMILY_PRIEST, 2210, 2);
-                        if (pAurEff)
+						if (pAurEff = caster->GetAuraEffect(SPELL_AURA_DUMMY, SPELLFAMILY_PRIEST, 2899, 1))
                             bonus += (float)pAurEff->GetAmount() / 100.0f;
 
                         DoneActualBenefit = caster->SpellBaseHealingBonus(GetSpellSchoolMask(GetSpellProto())) * bonus;
+                        // Improved PW: Shield: its weird having a SPELLMOD_ALL_EFFECTS here but its blizzards doing :)
+                        // Improved PW: Shield is only applied at the spell healing bonus because it was already applied to the base value in CalculateSpellDamage
+                        if (Player* modOwner = caster->GetSpellModOwner())
+                            modOwner->ApplySpellMod(GetSpellProto()->Id, SPELLMOD_ALL_EFFECTS, DoneActualBenefit);
+                        DoneActualBenefit *= caster->CalculateLevelPenalty(GetSpellProto());
+
+                        amount += (int32)DoneActualBenefit;
+
+                        // Twin Disciplines
+                        if (pAurEff = caster->GetAuraEffect(SPELL_AURA_ADD_PCT_MODIFIER, SPELLFAMILY_PRIEST, 0x400000, 0, 0, caster->GetGUID()))
+                            amount *= (100.0f + pAurEff->GetAmount()) / 100.0f;
+
+                        // Focused Power
+                        Unit::AuraEffectList const& mHealingDonePct = caster->GetAuraEffectsByType(SPELL_AURA_MOD_HEALING_DONE_PERCENT);
+                        for (Unit::AuraEffectList::const_iterator i = mHealingDonePct.begin(); i != mHealingDonePct.end(); ++i)
+                            amount *= (100.0f + (*i)->GetAmount()) / 100.0f;
+
+                        return amount;
                     }
                     break;
                 case SPELLFAMILY_PALADIN:
@@ -1070,7 +1077,30 @@ void AuraEffect::UpdatePeriodic(Unit * caster)
                         --m_amount;
                     break;
             }
-            break;
+				// Lady Deathwhisper - Mana Barrier
+                case 70842:
+                {
+                    Unit * caster = GetBase()->GetUnitOwner();
+ 					if (!caster || !caster->ToCreature() || (caster->GetEntry() != 36855))
+                        break;
+ 
+                    uint32 hp_to_restore = caster->GetMaxHealth() - caster->GetHealth();
+                    uint32 cur_mana = caster->GetPower(POWER_MANA);
+ 
+                    if (!cur_mana)
+                        GetBase()->Remove(AURA_REMOVE_BY_EXPIRE);
+ 
+                    if (hp_to_restore)
+                    {
+                        if (cur_mana < hp_to_restore)
+                            hp_to_restore = cur_mana;
+ 
+                        caster->SetHealth(caster->GetHealth() + hp_to_restore);
+                        caster->SetPower(POWER_MANA, caster->GetPower(POWER_MANA) - hp_to_restore);
+                    }
+                break;
+				}
+			break;
         case SPELL_AURA_PERIODIC_DUMMY:
             switch(GetSpellProto()->SpellFamilyName)
             {
@@ -1281,6 +1311,9 @@ void AuraEffect::PeriodicTick(Unit * target, Unit * caster) const
                     damage = damageReductedArmor;
                 }
 
+                if (GetSpellProto()->Id == 50344) // Dream Funnel
+                    damage = uint32(target->GetMaxHealth()*0.05f);
+
                 // Curse of Agony damage-per-tick calculation
                 if (GetSpellProto()->SpellFamilyName == SPELLFAMILY_WARLOCK && (GetSpellProto()->SpellFamilyFlags[0] & 0x400) && GetSpellProto()->SpellIconID == 544)
                 {
@@ -1482,7 +1515,7 @@ void AuraEffect::PeriodicTick(Unit * target, Unit * caster) const
             int32 damage = m_amount > 0 ? m_amount : 0;
 
             if (GetAuraType() == SPELL_AURA_OBS_MOD_HEALTH)
-            {
+			{
                 // Taken mods
                 float TakenTotalMod = 1.0f;
 
@@ -1507,10 +1540,9 @@ void AuraEffect::PeriodicTick(Unit * target, Unit * caster) const
                 float maxval_hot = target->GetMaxPositiveAuraModifier(SPELL_AURA_MOD_HOT_PCT);
                 if (maxval_hot)
                     TakenTotalMod *= (100.0f + maxval_hot) / 100.0f;
-
+ 
                 TakenTotalMod = TakenTotalMod > 0.0f ? TakenTotalMod : 0.0f;
-
-                damage = uint32(target->GetMaxHealth() * damage / 100);
+                damage = caster->SpellHealingBonus(target, GetSpellProto(), uint32(target->GetMaxHealth() * damage / 100), DOT);
                 damage = uint32(damage * TakenTotalMod);
             }
             else
@@ -1801,6 +1833,7 @@ void AuraEffect::PeriodicTick(Unit * target, Unit * caster) const
 
 void AuraEffect::PeriodicDummyTick(Unit * target, Unit * caster) const
 {
+
     switch (GetSpellProto()->SpellFamilyName)
     {
         case SPELLFAMILY_GENERIC:
@@ -1870,6 +1903,30 @@ void AuraEffect::PeriodicDummyTick(Unit * target, Unit * caster) const
                 {
                     target->CastSpell(target, 64774, true, NULL, NULL, GetCasterGUID());
                     target->RemoveAura(64821);
+                }
+                break;
+            case 63276: // Mark of the Faceless
+                if (caster) {
+                    uint32 count = 0;
+                    Position *pos = target;
+                    std::list<Unit*> unitList;
+                    Trinity::SpellNotifierCreatureAndPlayer notifier(caster, unitList, 15, PUSH_DST_CENTER, SPELL_TARGETS_ENEMY, pos, 0);
+                    caster->GetMap()->VisitAll(pos->m_positionX, pos->m_positionY, 15, notifier);
+                    int32 bp = GetAmount();
+                    for (std::list<Unit*>::iterator itr = unitList.begin(); itr != unitList.end(); ++itr)
+                    {
+                        if (*itr == target)
+                            continue;
+                        caster->CastCustomSpell(*itr, 63278, NULL, &bp, NULL, true, NULL);
+                        count++;
+                    }
+                    if (count > 0)
+                        caster->DealHeal(caster, bp * 20, GetSpellProto());
+                }
+                break;
+            case 63382: // Rapid Burst
+                {
+                    caster->CastSpell(target, (target->GetMap()->IsHeroic() ? urand(64531, 64532) : urand(63387, 64019)), true);
                 }
                 break;
         }
@@ -2315,9 +2372,23 @@ void AuraEffect::TriggerSpell(Unit * target, Unit * caster) const
                 return;
             // Beacon of Light
             case 53563:
+			{
                 Unit * triggerCaster = (Unit *)(GetBase()->GetOwner());
                 triggerCaster->CastSpell(triggerTarget, triggeredSpellInfo, true, 0, this,triggerCaster->GetGUID());
                 return;
+			}
+            // Earthbind
+            case 6474:
+                // Earthen Power (Rank 1, 2)
+                Unit * totem = (Unit *)(GetBase()->GetOwner());
+                Aura * aura;
+                if (!totem->isTotem())
+                    return;
+                if (Unit * owner = totem->GetOwner())
+                    if ((aura = owner->GetAura(51523)) || (aura = owner->GetAura(51524)))
+                        if (roll_chance_i(aura->GetEffect(0)->GetAmount()))
+                            totem->CastSpell(totem, 59566, true, 0, this);
+                break;
         }
     }
 
@@ -4163,6 +4234,7 @@ void AuraEffect::HandleModStateImmunityMask(AuraApplication const * aurApp, uint
     {
         target->RemoveAurasByType(SPELL_AURA_MOD_ROOT);
         target->RemoveAurasByType(SPELL_AURA_MOD_DECREASE_SPEED);
+		target->ApplySpellImmune(GetId(),IMMUNITY_MECHANIC,IMMUNE_TO_MOVEMENT_IMPAIRMENT_AND_LOSS_CONTROL_MASK,apply);
     }
 
     if (apply && GetSpellProto()->AttributesEx & SPELL_ATTR_EX_DISPEL_AURAS_ON_IMMUNITY)
@@ -5475,7 +5547,8 @@ void AuraEffect::HandleAuraDummy(AuraApplication const * aurApp, uint8 mode, boo
         return;
 
     Unit * target = aurApp->GetTarget();
-
+	
+	
     Unit * caster = GetCaster();
 
     if (mode & AURA_EFFECT_HANDLE_REAL)
@@ -5645,6 +5718,14 @@ void AuraEffect::HandleAuraDummy(AuraApplication const * aurApp, uint8 mode, boo
                             caster->CastCustomSpell(28836, SPELLVALUE_BASE_POINT0, damage, target);
                     }
                     break;
+                case 63322: // Saronite Vapors
+                {
+                    int32 damage = 1 << GetBase()->GetStackAmount();
+                    damage *= 100;
+                    int32 mana = damage / 2;
+                    caster->CastCustomSpell(target, 63337, &mana, NULL, NULL, true);
+                    caster->CastCustomSpell(target, 63338, &damage, NULL, NULL, true);
+                }
             }
         }
         // AT REMOVE
@@ -5683,7 +5764,7 @@ void AuraEffect::HandleAuraDummy(AuraApplication const * aurApp, uint8 mode, boo
             {
                 case SPELLFAMILY_GENERIC:
                     switch(GetId())
-                    {
+					{
                         case 2584: // Waiting to Resurrect
                             // Waiting to resurrect spell cancel, we must remove player from resurrect queue
                             if (target->GetTypeId() == TYPEID_PLAYER)

@@ -633,7 +633,10 @@ void Aura::Update(uint32 diff, Unit * caster)
                     if (powertype == POWER_HEALTH)
                     {
                         if (caster->GetHealth() > manaPerSecond)
+						{
+						    caster->SendSpellNonMeleeDamageLog(caster, m_spellProto->Id, manaPerSecond, GetSpellSchoolMask(m_spellProto), 0, 0, false, 0, false);
                             caster->ModifyHealth(-manaPerSecond);
+						}
                         else
                         {
                             Remove();
@@ -962,6 +965,48 @@ void Aura::HandleAuraSpecificMods(AuraApplication const * aurApp, Unit * caster,
                   target->ToPlayer()->RemoveMovementImpairingAuras();
                 }
                         break;
+                }
+				// Conflagrate - DoT
+                // TODO: Retrieve the DoT damage in a faster way
+                if (GetSpellProto()->TargetAuraState == AURA_STATE_CONFLAGRATE) {
+
+                    AuraEffect const* aura = NULL;                // found req. aura for damage calculation
+
+                    Unit::AuraEffectList const &mPeriodic = target->GetAuraEffectsByType(SPELL_AURA_PERIODIC_DAMAGE);
+                    for (Unit::AuraEffectList::const_iterator i = mPeriodic.begin(); i != mPeriodic.end(); ++i)
+                    {
+                        // for caster applied auras only
+                        if ((*i)->GetSpellProto()->SpellFamilyName != SPELLFAMILY_WARLOCK ||
+                            (*i)->GetCasterGUID() != caster->GetGUID())
+                            continue;
+
+                        // Immolate
+                        if ((*i)->GetSpellProto()->SpellFamilyFlags[0] & 0x4)
+                        {
+                            aura = *i;                      // it selected always if exist
+                            break;
+                        }
+
+                        // Shadowflame
+                        if ((*i)->GetSpellProto()->SpellFamilyFlags[2] & 0x00000002)
+                            aura = *i;                      // remember but wait possible Immolate as primary priority
+                    }
+
+                    // found Immolate or Shadowflame
+                    if (aura)
+                    {
+                        uint32 pdamage = aura->GetAmount() > 0 ? aura->GetAmount() : 0;
+                        pdamage = caster->SpellDamageBonus(target, aura->GetSpellProto(), pdamage, DOT, aura->GetBase()->GetStackAmount());
+                        pdamage *= aura->GetTotalTicks();
+                        pdamage += caster->SpellDamageBonus(target, aura->GetSpellProto(), aura->GetSpellProto()->EffectBasePoints[1], SPELL_DIRECT_DAMAGE);
+                        pdamage *= 0.24f;
+                        pdamage /= m_effects[1]->GetTotalTicks();
+                        // Glyph of Conflagrate
+                        if (!caster->HasAura(56235))
+                            target->RemoveAurasDueToSpell(aura->GetId(), caster->GetGUID());
+
+                        m_effects[1]->ChangeAmount(pdamage);
+                    }
                 }
                 break;
             case SPELLFAMILY_PRIEST:
@@ -1327,6 +1372,20 @@ void Aura::HandleAuraSpecificMods(AuraApplication const * aurApp, Unit * caster,
                         target->SetReducedThreatPercent(0,0);
                     break;
             }
+			// Bone Storm
+	        if (GetSpellProto()->SpellIconID == 2836)
+	        {
+	            if (target->HasAura(69076))
+	            {
+		            if(AuraApplication * aura = target->GetAuraApplication(69076, 0))
+		            {
+                        aura->GetBase()->SetDuration(20000);
+                        aura->GetBase()->SetMaxDuration(20000);
+                        aura->ClientUpdate();
+		            }
+	            }
+	            break;
+	        }
             break;
         case SPELLFAMILY_ROGUE:
             // Stealth
@@ -1385,6 +1444,17 @@ void Aura::HandleAuraSpecificMods(AuraApplication const * aurApp, Unit * caster,
                     // Do effects only on aura owner
                     if (GetCasterGUID() != target->GetGUID())
                         break;
+					// Recalculate all existing paladin auras
+                    if (GetId() == 31821) {
+                        Unit::AuraApplicationMap const &casterAuras = caster->GetAppliedAuras();
+                        for (Unit::AuraApplicationMap::const_iterator i = casterAuras.begin(); i != casterAuras.end(); ++i)
+                        {
+                            Aura * aura = i->second->GetBase();
+                            if (aura->GetSpellProto()->SpellFamilyFlags[2] & 0x20) {
+                                aura->RecalculateAmountOfEffects();
+                            }
+                        }
+                    }
                     if (apply)
                     {
                         if ((GetSpellProto()->Id == 31821 && target->HasAura(19746, GetCasterGUID())) || (GetSpellProto()->Id == 19746 && target->HasAura(31821)))
