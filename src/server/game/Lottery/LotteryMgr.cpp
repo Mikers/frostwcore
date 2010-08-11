@@ -103,7 +103,7 @@ uint8 LotteryMgr::LotteryRewards(uint32 number)
 				continue;
 			MailDraft("You won the Lottery!", "Tadaaam!")   
 					.AddMoney(m_jackpot/pcount)
-					.SendMailTo(MailReceiver(player,m_winners[i]), MailSender(MAIL_CREATURE, 79));
+					.SendMailTo(MailReceiver(player,m_winners[i]), MailSender(MAIL_CREATURE, 700109));
 			m_winners[i] = 0;
 		}
 		CharacterDatabase.BeginTransaction();
