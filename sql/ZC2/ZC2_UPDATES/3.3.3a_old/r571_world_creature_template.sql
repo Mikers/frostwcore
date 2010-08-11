@@ -1,0 +1,1 @@
+UPDATE creature_template SET unit_flags = 33554434 WHERE entry IN (30641, 31521, 31103);
