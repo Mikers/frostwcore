@@ -1,1 +1,0 @@
-UPDATE `creature_template` SET `dmgschool` = 4, `dmg_multiplier` = 7.5, `unit_flags` = 33587202, `ScriptName` = 'npc_sif' WHERE `entry` = 33196;

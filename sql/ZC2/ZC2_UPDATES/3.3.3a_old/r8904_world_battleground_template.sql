@@ -1,1 +1,0 @@
-UPDATE `battleground_template` SET `Disable`=0 WHERE `id` IN (10,11);
