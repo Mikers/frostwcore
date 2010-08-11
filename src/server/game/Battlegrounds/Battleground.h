@@ -110,6 +110,7 @@ enum BattlegroundTimeIntervals
     INVITATION_REMIND_TIME          = 20000,                // ms
     INVITE_ACCEPT_WAIT_TIME         = 40000,                // ms
     TIME_TO_AUTOREMOVE              = 120000,               // ms
+	ARENA_TIME_LIMIT                = 2700,                 // secs
     MAX_OFFLINE_TIME                = 300,                  // secs
     RESPAWN_ONE_DAY                 = 86400,                // secs
     RESPAWN_IMMEDIATELY             = 0,                    // secs
@@ -615,6 +616,7 @@ class Battleground
         uint32 m_ClientInstanceID;                          //the instance-id which is sent to the client and without any other internal use
         uint32 m_StartTime;
         int32 m_EndTime;                                    // it is set to 120000 when bg is ending and it decreases itself
+		int32 m_ArenaTimeLimit;
         uint32 m_LastResurrectTime;
         BattlegroundBracketId m_BracketId;
         uint8  m_ArenaType;                                 // 2=2v2, 3=3v3, 5=5v5

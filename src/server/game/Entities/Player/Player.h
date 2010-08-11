@@ -388,6 +388,27 @@ enum PlayerFlags
     PLAYER_FLAGS_NO_XP_GAIN     = 0x02000000
 };
 
+#define PLAYER_TITLE_MASK_ALLIANCE_PVP             \
+    (PLAYER_TITLE_PRIVATE | PLAYER_TITLE_CORPORAL |  \
+      PLAYER_TITLE_SERGEANT_A | PLAYER_TITLE_MASTER_SERGEANT | \
+      PLAYER_TITLE_SERGEANT_MAJOR | PLAYER_TITLE_KNIGHT | \
+      PLAYER_TITLE_KNIGHT_LIEUTENANT | PLAYER_TITLE_KNIGHT_CAPTAIN | \
+      PLAYER_TITLE_KNIGHT_CHAMPION | PLAYER_TITLE_LIEUTENANT_COMMANDER | \
+      PLAYER_TITLE_COMMANDER | PLAYER_TITLE_MARSHAL | \
+      PLAYER_TITLE_FIELD_MARSHAL | PLAYER_TITLE_GRAND_MARSHAL)
+
+#define PLAYER_TITLE_MASK_HORDE_PVP                           \
+    (PLAYER_TITLE_SCOUT | PLAYER_TITLE_GRUNT |  \
+      PLAYER_TITLE_SERGEANT_H | PLAYER_TITLE_SENIOR_SERGEANT | \
+      PLAYER_TITLE_FIRST_SERGEANT | PLAYER_TITLE_STONE_GUARD | \
+      PLAYER_TITLE_BLOOD_GUARD | PLAYER_TITLE_LEGIONNAIRE | \
+      PLAYER_TITLE_CENTURION | PLAYER_TITLE_CHAMPION | \
+      PLAYER_TITLE_LIEUTENANT_GENERAL | PLAYER_TITLE_GENERAL | \
+      PLAYER_TITLE_WARLORD | PLAYER_TITLE_HIGH_WARLORD)
+
+#define PLAYER_TITLE_MASK_ALL_PVP  \
+    (PLAYER_TITLE_MASK_ALLIANCE_PVP | PLAYER_TITLE_MASK_HORDE_PVP)
+
 // used for PLAYER__FIELD_KNOWN_TITLES field (uint64), (1<<bit_index) without (-1)
 // can't use enum for uint64 values
 #define PLAYER_TITLE_DISABLED              UI64LIT(0x0000000000000000)
@@ -1605,6 +1626,7 @@ class Player : public Unit, public GridObject<Player>
         bool IsAffectedBySpellmod(SpellEntry const *spellInfo, SpellModifier *mod, Spell * spell = NULL);
         template <class T> T ApplySpellMod(uint32 spellId, SpellModOp op, T &basevalue, Spell * spell = NULL);
         void RemoveSpellMods(Spell * spell);
+		void RemovePrecastSpellMods(Spell * spell);
         void RestoreSpellMods(Spell * spell);
         void DropModCharge(SpellModifier * mod, Spell * spell);
         void SetSpellModTakingSpell(Spell* spell, bool apply);
@@ -1956,6 +1978,7 @@ class Player : public Unit, public GridObject<Player>
             if (value)
                 AddKnownCurrency(ITEM_ARENA_POINTS_ID); // Arena Points
         }
+        void UpdateKnownTitles();
 
         //End of PvP System
 
@@ -2220,7 +2243,7 @@ class Player : public Unit, public GridObject<Player>
         float m_homebindY;
         float m_homebindZ;
 
-        WorldLocation GetStartPosition() const;
+        WorldLocation GetStartPosition() const;       
 
         // currently visible objects at player client
         typedef std::set<uint64> ClientGUIDs;

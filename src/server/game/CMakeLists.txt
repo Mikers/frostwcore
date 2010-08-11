@@ -58,6 +58,7 @@ set(game_STAT_SRCS
   ${sources_AI}
   ${sources_AuctionHouse}
   ${sources_Battlegrounds}
+  ${sources_BossSpellWorker}
   ${sources_Calendar}
   ${sources_Chat}
   ${sources_Combat}

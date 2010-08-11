@@ -169,12 +169,12 @@ public:
     {
     mob_snobold_vassalAI(Creature* pCreature) : ScriptedAI(pCreature)
     {
-        instance = (ScriptedInstance*)pCreature->GetInstanceScript();
+        instance = (InstanceScript*)pCreature->GetInstanceScript();
         bsw = new BossSpellWorker(this);
         Reset();
     }
 
-    ScriptedInstance* instance;
+    InstanceScript* instance;
     BossSpellWorker* bsw;
     Unit* pBoss;
     Unit* defaultTarget;
@@ -249,12 +249,12 @@ public:
     {
     boss_acidmawAI(Creature* pCreature) : ScriptedAI(pCreature)
     {
-        instance = (ScriptedInstance*)pCreature->GetInstanceScript();
+        instance = (InstanceScript*)pCreature->GetInstanceScript();
         bsw = new BossSpellWorker(this);
         Reset();
     }
 
-    ScriptedInstance* instance;
+    InstanceScript* instance;
     BossSpellWorker* bsw;
     uint8 stage;
     bool enraged;
@@ -370,12 +370,12 @@ public:
     {
     boss_dreadscaleAI(Creature* pCreature) : ScriptedAI(pCreature)
     {
-        instance = (ScriptedInstance*)pCreature->GetInstanceScript();
+        instance = (InstanceScript*)pCreature->GetInstanceScript();
         bsw = new BossSpellWorker(this);
         Reset();
     }
 
-    ScriptedInstance* instance;
+    InstanceScript* instance;
     BossSpellWorker* bsw;
     uint8 stage;
     bool enraged;
@@ -491,7 +491,7 @@ public:
     {
     mob_slime_poolAI(Creature *pCreature) : ScriptedAI(pCreature)
     {
-        instance = ((ScriptedInstance*)pCreature->GetInstanceScript());
+        instance = ((InstanceScript*)pCreature->GetInstanceScript());
         bsw = new BossSpellWorker(this);
         Reset();
     }
@@ -546,12 +546,12 @@ public:
     {
     boss_icehowlAI(Creature* pCreature) : ScriptedAI(pCreature)
     {
-        instance = (ScriptedInstance*)pCreature->GetInstanceScript();
+        instance = (InstanceScript*)pCreature->GetInstanceScript();
         bsw = new BossSpellWorker(this);
         Reset();
     }
 
-    ScriptedInstance* instance;
+    InstanceScript* instance;
     BossSpellWorker* bsw;
     bool MovementStarted;
     bool TrampleCasted;

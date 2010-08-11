@@ -218,9 +218,14 @@ enum Events
 ## Boss Sartharion
 ######*/
 
-struct boss_sartharionAI : public BossAI
+struct boss_sartharionAI : public ScriptedAI
 {
-    boss_sartharionAI(Creature* pCreature) : BossAI(pCreature, TYPE_SARTHARION_EVENT){}
+    boss_sartharionAI(Creature* pCreature) : ScriptedAI(pCreature, TYPE_SARTHARION_EVENT)
+	{
+		instance = pCreature->GetInstanceScript();
+	}
+
+	InstanceScript* instance;
 
     bool m_bIsBerserk;
     bool m_bIsSoftEnraged;
@@ -230,7 +235,6 @@ struct boss_sartharionAI : public BossAI
 
     void Reset()
     {
-        _Reset();
         if (instance)
             instance->SetData(TYPE_SARTHARION_EVENT, NOT_STARTED);
         RespawnDrakes();
@@ -250,18 +254,17 @@ struct boss_sartharionAI : public BossAI
 
     void EnterCombat(Unit* pWho)
     {
-        _EnterCombat();
         if (instance)
             instance->SetData(TYPE_SARTHARION_EVENT, IN_PROGRESS);
         DoScriptText(SAY_SARTHARION_AGGRO,me);
         FetchDragons();
         
-        events.ScheduleEvent(EVENT_FLAME_TSUNAMI, 30000);
-        events.ScheduleEvent(EVENT_FLAME_BREATH, 20000);
-        events.ScheduleEvent(EVENT_TAIL_SWEEP, 15000);
-        events.ScheduleEvent(EVENT_CLEAVE, 7000);
-        events.ScheduleEvent(EVENT_LAVA_STRIKE, 5000);
-        events.ScheduleEvent(EVENT_ENRAGE, 15*MINUTE*IN_MILLISECONDS);
+        Events.ScheduleEvent(EVENT_FLAME_TSUNAMI, 30000);
+        Events.ScheduleEvent(EVENT_FLAME_BREATH, 20000);
+        Events.ScheduleEvent(EVENT_TAIL_SWEEP, 15000);
+        Events.ScheduleEvent(EVENT_CLEAVE, 7000);
+        Events.ScheduleEvent(EVENT_LAVA_STRIKE, 5000);
+        Events.ScheduleEvent(EVENT_ENRAGE, 15*MINUTE*IN_MILLISECONDS);
     }
 
     void DoAction(const int32 action)
@@ -276,7 +279,6 @@ struct boss_sartharionAI : public BossAI
 
     void JustDied(Unit* pKiller)
     {
-        _JustDied();
         DoScriptText(SAY_SARTHARION_DEATH,me);
         if (instance)
             instance->SetData(TYPE_SARTHARION_EVENT, DONE);
@@ -337,7 +339,7 @@ struct boss_sartharionAI : public BossAI
             pFetchTene->AddAura(SPELL_WILL_OF_SARTHARION, pFetchTene);
             AddDrakeLootMode();
             achievProgress++;            
-            events.ScheduleEvent(EVENT_CALL_TENEBRON, 30000);
+            Events.ScheduleEvent(EVENT_CALL_TENEBRON, 30000);
             pFetchTene->GetMotionMaster()->MovePoint(POINT_ID_INIT, m_aTene[0]);
 
             if (!pFetchTene->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE))
@@ -351,7 +353,7 @@ struct boss_sartharionAI : public BossAI
             pFetchShad->AddAura(SPELL_WILL_OF_SARTHARION, pFetchShad);
             AddDrakeLootMode();
             achievProgress++;
-            events.ScheduleEvent(EVENT_CALL_SHADRON, 75000);
+            Events.ScheduleEvent(EVENT_CALL_SHADRON, 75000);
             pFetchShad->GetMotionMaster()->MovePoint(POINT_ID_INIT, m_aShad[0]);
 
             if (!pFetchShad->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE))
@@ -365,7 +367,7 @@ struct boss_sartharionAI : public BossAI
             pFetchVesp->AddAura(SPELL_WILL_OF_SARTHARION, pFetchVesp);
             AddDrakeLootMode();
             achievProgress++;
-            events.ScheduleEvent(EVENT_CALL_VESPERON, 120000);
+            Events.ScheduleEvent(EVENT_CALL_VESPERON, 120000);
             pFetchVesp->GetMotionMaster()->MovePoint(POINT_ID_INIT, m_aVesp[0]);
 
             if (!pFetchVesp->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE))
@@ -565,9 +567,9 @@ struct boss_sartharionAI : public BossAI
             m_bIsSoftEnraged = true;
         }
 
-        events.Update(uiDiff);
+        Events.Update(uiDiff);
 
-        while (uint32 eventId = events.ExecuteEvent())
+        while (uint32 eventId = Events.ExecuteEvent())
         {
             switch(eventId)
             {
@@ -582,20 +584,20 @@ struct boss_sartharionAI : public BossAI
                     else
                         for (int8 i = 2; i < 5; i++)
                             me->SummonCreature(NPC_FLAME_TSUNAMI, FlameSpawn[i], TEMPSUMMON_TIMED_DESPAWN, 14000);
-                    events.ScheduleEvent(EVENT_FLAME_TSUNAMI, 30000);
+                    Events.ScheduleEvent(EVENT_FLAME_TSUNAMI, 30000);
                     break;
                 case EVENT_FLAME_BREATH:
                     DoScriptText(SAY_SARTHARION_BREATH, me);
                     DoCast(me->getVictim(), RAID_MODE(SPELL_FLAME_BREATH, SPELL_FLAME_BREATH_H));
-                    events.ScheduleEvent(EVENT_FLAME_BREATH, urand(25000,35000));
+                    Events.ScheduleEvent(EVENT_FLAME_BREATH, urand(25000,35000));
                     break;
                 case EVENT_TAIL_SWEEP:
                     DoCast(me->getVictim(), RAID_MODE(SPELL_TAIL_LASH, SPELL_TAIL_LASH_H));
-                    events.ScheduleEvent(EVENT_TAIL_SWEEP, urand(15000,20000));
+                    Events.ScheduleEvent(EVENT_TAIL_SWEEP, urand(15000,20000));
                     break;
                 case EVENT_CLEAVE:
                     DoCast(me->getVictim(), SPELL_CLEAVE);
-                    events.ScheduleEvent(EVENT_CLEAVE, urand(7000,10000));
+                    Events.ScheduleEvent(EVENT_CLEAVE, urand(7000,10000));
                     break;
                 case EVENT_LAVA_STRIKE:
                     if (Unit* pTarget = SelectUnit(SELECT_TARGET_RANDOM, 0))
@@ -604,7 +606,7 @@ struct boss_sartharionAI : public BossAI
                         if(urand(0,5) == 0)
                             DoScriptText(RAND(SAY_SARTHARION_SPECIAL_1,SAY_SARTHARION_SPECIAL_2,SAY_SARTHARION_SPECIAL_3), me);
                     }
-                    events.ScheduleEvent(EVENT_LAVA_STRIKE, (m_bIsSoftEnraged ? urand(1400, 2000) : urand(5000,20000)));
+                    Events.ScheduleEvent(EVENT_LAVA_STRIKE, (m_bIsSoftEnraged ? urand(1400, 2000) : urand(5000,20000)));
                     break;
                 case EVENT_CALL_TENEBRON:
                     CallDragon(DATA_TENEBRON);
