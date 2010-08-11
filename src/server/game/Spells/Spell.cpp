@@ -52,6 +52,7 @@
 #include "ScriptMgr.h"
 #include "ConditionMgr.h"
 #include "DisableMgr.h"
+#include "OutdoorPvPMgr.h"
 #include "SpellScript.h"
 
 #define SPELL_CHANNEL_UPDATE_INTERVAL (1 * IN_MILLISECONDS)
@@ -964,8 +965,16 @@ void Spell::AddUnitTarget(Unit* pVictim, uint32 effIndex)
     if (!CheckTarget(pVictim, effIndex))
         return;
 
+    // Skip if has aura "Recently Reapaired"
+    if (pVictim->HasAura(62705))
+        return;
+    
     // Check for effect immune skip if immuned
     bool immuned = pVictim->IsImmunedToSpellEffect(m_spellInfo, effIndex);
+
+    // Saronite Vapors Hack
+    if (m_spellInfo->Id == 63337)
+        immuned = false;
 
     uint64 targetGUID = pVictim->GetGUID();
 
@@ -1396,6 +1405,10 @@ SpellMissInfo Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask, bool 
     if (m_spellInfo->speed && (unit->IsImmunedToDamage(m_spellInfo) || unit->IsImmunedToSpell(m_spellInfo)))
         return SPELL_MISS_IMMUNE;
 
+    // Deterrence Hack for delayed spells
+    if (m_spellInfo->speed && unit->HasAura(19263))
+        return SPELL_MISS_DEFLECT;
+
     if (unit->GetTypeId() == TYPEID_PLAYER)
     {
         unit->ToPlayer()->GetAchievementMgr().StartTimedAchievement(ACHIEVEMENT_TIMED_TYPE_SPELL_TARGET, m_spellInfo->Id);
@@ -1425,7 +1438,7 @@ SpellMissInfo Spell::DoSpellHitOnUnit(Unit *unit, const uint32 effectMask, bool 
             // I do not think this is a correct way to fix it. Sanctuary effect should make all delayed spells invalid
             // for delayed spells ignore not visible explicit target
             if (m_spellInfo->speed > 0.0f && unit == m_targets.getUnitTarget()
-                && (unit->m_invisibilityMask || m_caster->m_invisibilityMask)
+                && ((unit->m_invisibilityMask || m_caster->m_invisibilityMask) || unit->HasAuraTypeWithFamilyFlags(SPELL_AURA_MOD_STEALTH, SPELLFAMILY_ROGUE, SPELLFAMILYFLAG_ROGUE_VANISH))
                 && !m_caster->canSeeOrDetect(unit, true))
             {
                 // that was causing CombatLog errors
@@ -3330,6 +3343,9 @@ void Spell::handle_immediate()
 
     // Remove used for cast item if need (it can be already NULL after TakeReagents call
     TakeCastItem();
+	
+	if(Player* modOwner = m_caster->GetSpellModOwner())
+		modOwner->RemovePrecastSpellMods(this);
 
     if (m_spellState != SPELL_STATE_CASTING)
         finish(true);                                       // successfully finish spell cast (not last in case autorepeat or channel spell)
@@ -4395,6 +4411,7 @@ void Spell::TakePower()
     if (m_spellInfo->powerType == POWER_HEALTH)
     {
         m_caster->ModifyHealth(-(int32)m_powerCost);
+		m_caster->SendSpellNonMeleeDamageLog(m_caster, m_spellInfo->Id, m_powerCost, GetSpellSchoolMask(m_spellInfo), 0, 0, false, 0, false);
         return;
     }
 
@@ -5289,6 +5306,16 @@ SpellCastResult Spell::CheckCast(bool strict)
                             return SPELL_FAILED_BAD_TARGETS;
                 break;
             }
+            case SPELL_EFFECT_TRANS_DOOR:
+            {
+                if(m_caster->GetTypeId() == TYPEID_PLAYER)
+                {
+                    if(m_spellInfo->Id == 698)
+                        if(m_caster->ToPlayer()->GetMap()->IsBattleground())
+                            return SPELL_FAILED_NOT_HERE;
+                }
+                break;
+            }
             case SPELL_EFFECT_CHARGE:
             {
                 if (m_spellInfo->SpellFamilyName == SPELLFAMILY_WARRIOR)
@@ -5783,13 +5810,33 @@ SpellCastResult Spell::CheckCasterAuras() const
         if (m_spellInfo->Id == 42292 || m_spellInfo->Id == 59752)
             mechanic_immune = IMMUNE_TO_MOVEMENT_IMPAIRMENT_AND_LOSS_CONTROL_MASK;
     }
+	
+	// Caster with Cyclone can only use PvP trinket
+	if (m_caster->HasAura(33786) && mechanic_immune != IMMUNE_TO_MOVEMENT_IMPAIRMENT_AND_LOSS_CONTROL_MASK)
+    return SPELL_FAILED_STUNNED;
 
     // Check whether the cast should be prevented by any state you might have.
     SpellCastResult prevented_reason = SPELL_CAST_OK;
     // Have to check if there is a stun aura. Otherwise will have problems with ghost aura apply while logging out
     uint32 unitflag = m_caster->GetUInt32Value(UNIT_FIELD_FLAGS);     // Get unit state
-    if (unitflag & UNIT_FLAG_STUNNED && !(m_spellInfo->AttributesEx5 & SPELL_ATTR_EX5_USABLE_WHILE_STUNNED))
-        prevented_reason = SPELL_FAILED_STUNNED;
+    if (unitflag & UNIT_FLAG_STUNNED)
+        if (m_spellInfo->AttributesEx5 & SPELL_ATTR_EX5_USABLE_WHILE_STUNNED)
+            if (m_caster->HasAuraState(AURA_STATE_FROZEN))
+                prevented_reason = SPELL_FAILED_STUNNED;
+            else {
+                Unit::AuraApplicationMap& Auras = m_caster->GetAppliedAuras();
+                for (Unit::AuraApplicationMap::iterator iter = Auras.begin(); iter != Auras.end(); ++iter)
+                {
+                    Aura const * aura = iter->second->GetBase();
+                    if (GetAllSpellMechanicMask(aura->GetSpellProto()) & ((1<<MECHANIC_KNOCKOUT) | (1<<MECHANIC_SAPPED)))
+                    {
+                        prevented_reason = SPELL_FAILED_STUNNED;
+                        break;
+                    }
+                }
+            }
+        else
+            prevented_reason = SPELL_FAILED_STUNNED;
     else if (unitflag & UNIT_FLAG_CONFUSED && !(m_spellInfo->AttributesEx5 & SPELL_ATTR_EX5_USABLE_WHILE_CONFUSED))
         prevented_reason = SPELL_FAILED_CONFUSED;
     else if (unitflag & UNIT_FLAG_FLEEING && !(m_spellInfo->AttributesEx5 & SPELL_ATTR_EX5_USABLE_WHILE_FEARED))

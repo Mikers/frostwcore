@@ -1235,6 +1235,21 @@ void Player::Update(uint32 p_time)
     if (!IsInWorld())
         return;
 
+	if(GetAreaId() == 4281)  
+	{
+        if(FindNearestCreature(438700,1) && GetPositionZ() >= 410)
+		    TeleportTo(0, 2401.41, -5633.91, 377.02, 3.664271);
+	    if(FindNearestCreature(438700,1) && GetPositionZ() <= 390)
+		    TeleportTo(0, 2401.41, -5633.91, 420.67, 3.664271);
+	} 
+	if(GetAreaId() == 4342)
+	{
+		if(FindNearestCreature(438700,1) && GetPositionZ() >= 410)
+		    TeleportTo(609, 2401.41, -5633.91, 377.02, 3.664271);
+	    if(FindNearestCreature(438700,1) && GetPositionZ() <= 390)
+		    TeleportTo(609, 2401.41, -5633.91, 420.67, 3.664271);
+	}
+
     // undelivered mail
     if (m_nextMailDelivereTime && m_nextMailDelivereTime <= time(NULL))
     {
@@ -1812,7 +1827,8 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
 
     if ((GetSession()->GetSecurity() < SEC_GAMEMASTER) && sDisableMgr.IsDisabledFor(DISABLE_TYPE_MAP, mapid, this))
     {
-        sLog.outError("Player %s tried to enter a forbidden map", GetName());
+        sLog.outError("Player %s tried to enter a forbidden map %u", GetName(), mapid);
+        SendTransferAborted(mapid, TRANSFER_ABORT_MAP_NOT_ALLOWED);
         return false;
     }
 
@@ -1837,6 +1853,11 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
         SendTransferAborted(mapid, TRANSFER_ABORT_INSUF_EXPAN_LVL, mEntry->Expansion());
 
         return false;                                       // normal client can't teleport to this map...
+    }
+    else if((mEntry->Expansion() == 2 && mEntry->MapID != 609) &&  getLevel() < 68)
+    {
+        GetSession()->SendAreaTriggerMessage(GetSession()->GetTrinityString(LANG_LEVEL_MINREQUIRED),68);
+        return false;
     }
     else
         sLog.outDebug("Player %s is being teleported to map %u", GetName(), mapid);
@@ -6425,7 +6446,6 @@ void Player::CheckAreaExploreAndOutdoor()
                 {
                     XP = uint32(sObjectMgr.GetBaseXP(p->area_level)*sWorld.getRate(RATE_XP_EXPLORE));
                 }
-
                 GiveXP(XP, NULL);
                 SendExplorationExperience(area,XP);
             }
@@ -6682,6 +6702,7 @@ bool Player::RewardHonor(Unit *uVictim, uint32 groupsize, int32 honor, bool pvpt
 
     uint64 victim_guid = 0;
     uint32 victim_rank = 0;
+	uint32 rank_diff = 0;
 
     // need call before fields update to have chance move yesterday data to appropriate fields before today data change.
     UpdateHonorFields();
@@ -6720,23 +6741,53 @@ bool Player::RewardHonor(Unit *uVictim, uint32 groupsize, int32 honor, bool pvpt
             //  [15..28] Horde honor titles and player name
             //  [29..38] Other title and player name
             //  [39+]    Nothing
-            uint32 victim_title = pVictim->GetUInt32Value(PLAYER_CHOSEN_TITLE);
-                                                        // Get Killer titles, CharTitlesEntry::bit_index
+            // PLAYER__FIELD_KNOWN_TITLES describe which titles player can use,
+            // so we must find biggest pvp title , even for killer to find extra honor value
+            uint32 vtitle = pVictim->GetUInt32Value(PLAYER__FIELD_KNOWN_TITLES);
+            uint32 victim_title = 0;
+            uint32 ktitle = GetUInt32Value(PLAYER__FIELD_KNOWN_TITLES);
+            uint32 killer_title = 0;
+            if (PLAYER_TITLE_MASK_ALL_PVP & ktitle)
+            {
+
+                for (int i = ((GetTeam() == ALLIANCE) ? 1:HKRANKMAX);i!=((GetTeam() == ALLIANCE) ? HKRANKMAX : (2*HKRANKMAX-1));i++)
+                {
+					if (ktitle & (1<<i))
+						killer_title = i;
+                }
+            }
+            if (PLAYER_TITLE_MASK_ALL_PVP & vtitle)
+            {
+                for (int i = ((pVictim->GetTeam() == ALLIANCE) ? 1:HKRANKMAX);i!=((pVictim->GetTeam() == ALLIANCE) ? HKRANKMAX : (2*HKRANKMAX-1));i++)
+                {
+					if (vtitle & (1<<i))
+						victim_title = i;
+                }
+            }
             // Ranks:
             //  title[1..14]  -> rank[5..18]
             //  title[15..28] -> rank[5..18]
             //  title[other]  -> 0
             if (victim_title == 0)
                 victim_guid = 0;                        // Don't show HK: <rank> message, only log.
-            else if (victim_title < 15)
+            else if (victim_title < HKRANKMAX)
                 victim_rank = victim_title + 4;
-            else if (victim_title < 29)
-                victim_rank = victim_title - 14 + 4;
+            else if (victim_title < (2*HKRANKMAX-1))
+				victim_rank = victim_title - (HKRANKMAX-1) + 4;
             else
                 victim_guid = 0;                        // Don't show HK: <rank> message, only log.
 
+            // now find rank difference
+            if (killer_title == 0 && victim_rank>4)
+                rank_diff = victim_rank - 4;
+            else if (killer_title < HKRANKMAX)
+                rank_diff = (victim_rank>(killer_title + 4))? (victim_rank - (killer_title + 4)) : 0;
+            else if (killer_title < (2*HKRANKMAX-1))
+                rank_diff = (victim_rank>(killer_title - (HKRANKMAX-1) +4))? (victim_rank - (killer_title - (HKRANKMAX-1) + 4)) : 0;
+
             honor_f = ceil(Trinity::Honor::hk_honor_at_level_f(k_level) * (v_level - k_grey) / (k_level - k_grey));
 
+			honor *= 1 + sWorld.getRate(RATE_PVP_RANK_EXTRA_HONOR)*(((float)rank_diff) / 10.0f);
             // count the number of playerkills in one day
             ApplyModUInt32Value(PLAYER_FIELD_KILLS, 1, true);
             // and those in a lifetime
@@ -6744,6 +6795,7 @@ bool Player::RewardHonor(Unit *uVictim, uint32 groupsize, int32 honor, bool pvpt
             UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_EARN_HONORABLE_KILL);
             UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_HK_CLASS, pVictim->getClass());
             UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_HK_RACE, pVictim->getRace());
+            UpdateKnownTitles();
         }
         else
         {
@@ -6830,6 +6882,30 @@ bool Player::RewardHonor(Unit *uVictim, uint32 groupsize, int32 honor, bool pvpt
     }
 
     return true;
+}
+
+void Player::UpdateKnownTitles()
+{
+    uint32 new_title = 0;
+    uint32 honor_kills = GetUInt32Value(PLAYER_FIELD_LIFETIME_HONORABLE_KILLS);
+    uint32 old_title = GetUInt32Value(PLAYER_CHOSEN_TITLE);
+    RemoveFlag64(PLAYER__FIELD_KNOWN_TITLES,PLAYER_TITLE_MASK_ALL_PVP);
+    if (honor_kills < 0)
+        return;
+    bool max_rank = ((honor_kills >= sWorld.pvp_ranks[HKRANKMAX-1]) ? true : false);
+    for (int i = HKRANK01; i != HKRANKMAX; ++i)
+    {
+        if (honor_kills < sWorld.pvp_ranks[i] || (max_rank))
+        {
+            new_title = ((max_rank) ? (HKRANKMAX-1) : (i-1));
+            if (new_title > 0)
+                new_title += ((GetTeam() == ALLIANCE) ? 0 : (HKRANKMAX-1));
+            break;
+        }
+    }
+    SetFlag64(PLAYER__FIELD_KNOWN_TITLES,uint64(1) << new_title);
+    if (old_title > 0 && old_title < (2*HKRANKMAX-1) && new_title > old_title)
+        SetUInt32Value(PLAYER_CHOSEN_TITLE,new_title);
 }
 
 void Player::ModifyHonorPoints(int32 value)
@@ -8617,6 +8693,7 @@ void Player::SendInitWorldStates(uint32 zoneid, uint32 areaid)
                                                             // 7 1 - Arena season in progress, 0 - end of season
     data << uint32(0xC77) << uint32(sWorld.getConfig(CONFIG_ARENA_SEASON_IN_PROGRESS));
                                                             // 8 Arena season id
+    // ---
     data << uint32(0xF3D) << uint32(sWorld.getConfig(CONFIG_ARENA_SEASON_ID));
 
     if (mapid == 530)                                       // Outland
@@ -16102,7 +16179,7 @@ bool Player::LoadFromDB(uint32 guid, SqlQueryHolder *holder)
     // Map could be changed before
     mapEntry = sMapStore.LookupEntry(mapId);
     // client without expansion support
-    if (mapEntry)
+    if(mapEntry && GetSession()->Expansion() < mapEntry->Expansion() || ((mapEntry->Expansion() == 2 && mapEntry->MapID != 609) &&  getLevel() < 68))
     {
         if (GetSession()->Expansion() < mapEntry->Expansion())
         {
@@ -17708,7 +17785,7 @@ void Player::SaveToDB()
     ss << uint32(GetByteValue(PLAYER_FIELD_BYTES, 2));
     ss << ")";
 
-    CharacterDatabase.BeginTransaction();
+	CharacterDatabase.BeginTransaction();
 
     CharacterDatabase.Execute(ss.str().c_str());
 
@@ -18943,6 +19020,35 @@ void Player::RestoreSpellMods(Spell * spell)
     }
 }
 
+void Player::RemovePrecastSpellMods(Spell * spell)
+{
+	if (!spell)
+		return;
+	for (uint8 i=SPELLMOD_CASTING_TIME; i!=SPELLMOD_COST; i=SPELLMOD_COST)
+	{
+		for (SpellModList::iterator itr = m_spellMods[i].begin(); itr != m_spellMods[i].end();)
+		{
+			SpellModifier *mod = *itr;
+			++itr;
+			
+			// spellmods without aura set cannot be charged
+			if (!mod->ownerAura || !mod->ownerAura->GetCharges())
+				continue;
+				
+			// check if mod affected this spell
+			Spell::UsedSpellMods::iterator iterMod = spell->m_appliedMods.find(mod->ownerAura);
+			if (iterMod == spell->m_appliedMods.end())
+				continue;
+			
+			// remove from list
+			spell->m_appliedMods.erase(iterMod);
+			
+			if (mod->ownerAura->DropCharge())
+				itr = m_spellMods[i].begin();
+		}
+	}
+}
+
 void Player::RemoveSpellMods(Spell * spell)
 {
     if (!spell)
@@ -18980,6 +19086,9 @@ void Player::RemoveSpellMods(Spell * spell)
 
     for (uint8 i=0; i<MAX_SPELLMOD; ++i)
     {
+		// Used in Player::RemovePrecastSpellMods
+		if (i == SPELLMOD_CASTING_TIME || i == SPELLMOD_COST)
+			continue;
         for (SpellModList::iterator itr = m_spellMods[i].begin(); itr != m_spellMods[i].end();)
         {
             SpellModifier *mod = *itr;
@@ -23990,6 +24099,7 @@ void Player::_LoadRandomBGStatus(QueryResult_AutoPtr result)
     if (result)
         m_IsBGRandomWinner = true;
 }
+
 
 float Player::GetAverageItemLevel()
 {
