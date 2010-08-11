@@ -71,6 +71,7 @@
 #include "CharacterDatabaseCleaner.h"
 #include "ScriptMgr.h"
 #include "WeatherMgr.h"
+#include "LotteryMgr.h"
 
 volatile bool World::m_stopEvent = false;
 uint8 World::m_ExitCode = SHUTDOWN_EXIT_CODE;
@@ -1411,6 +1412,9 @@ void World::SetInitialWorldSettings()
 
     sLog.outString("Loading Weather Data...");
     sWeatherMgr.LoadWeatherData();
+
+	sLog.outString("Loading Lottery Data...");
+    sLotteryMgr.LoadLottery();
 
     sLog.outString("Loading Quests...");
     sObjectMgr.LoadQuests();                                    // must be loaded after DBCs, creature_template, item_template, gameobject tables

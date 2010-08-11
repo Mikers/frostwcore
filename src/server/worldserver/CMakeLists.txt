@@ -98,6 +98,7 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/src/server/game/Guilds
   ${CMAKE_SOURCE_DIR}/src/server/game/Instances
   ${CMAKE_SOURCE_DIR}/src/server/game/Loot
+  ${CMAKE_SOURCE_DIR}/src/server/game/Lottery
   ${CMAKE_SOURCE_DIR}/src/server/game/Mails
   ${CMAKE_SOURCE_DIR}/src/server/game/Maps
   ${CMAKE_SOURCE_DIR}/src/server/game/Miscellaneous
@@ -202,3 +203,4 @@ if( UNIX )
   install(TARGETS worldserver DESTINATION bin)
   install(FILES   worldserver.conf.dist DESTINATION etc)
 endif()
+

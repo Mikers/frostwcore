@@ -8,6 +8,7 @@
 # WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
 # implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
+file(GLOB_RECURSE scripts_custom custom/*.cpp custom/*.h)
 file(GLOB_RECURSE scripts_easternkingdoms EasternKingdoms/*.cpp EasternKingdoms/*.h)
 file(GLOB_RECURSE scripts_kalimdor Kalimdor/*.cpp Kalimdor/*.h)
 file(GLOB_RECURSE scripts_northrend Northrend/*.cpp Northrend/*.h)
@@ -25,6 +26,7 @@ if( SCRIPTPCH )
 endif()
 
 set(scripts_STAT_SRCS
+  ${scripts_custom}
   ${scripts_easternkingdoms}
   ${scripts_kalimdor}
   ${scripts_northrend}
@@ -112,6 +114,7 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/src/server/game/Instances
   ${CMAKE_SOURCE_DIR}/src/server/game/LookingForGroup
   ${CMAKE_SOURCE_DIR}/src/server/game/Loot
+  ${CMAKE_SOURCE_DIR}/src/server/game/Lottery
   ${CMAKE_SOURCE_DIR}/src/server/game/Mails
   ${CMAKE_SOURCE_DIR}/src/server/game/Miscellaneous
   ${CMAKE_SOURCE_DIR}/src/server/game/Maps

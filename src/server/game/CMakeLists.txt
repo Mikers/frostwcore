@@ -32,6 +32,7 @@ file(GLOB_RECURSE sources_Groups Groups/*.cpp Groups/*.h)
 file(GLOB_RECURSE sources_Guilds Guilds/*.cpp Guilds/*.h)
 file(GLOB_RECURSE sources_Instances Instances/*.cpp Instances/*.h)
 file(GLOB_RECURSE sources_Loot Loot/*.cpp Loot/*.h)
+file(GLOB_RECURSE sources_Lottery Lottery/*.cpp Lottery/*.h)
 file(GLOB_RECURSE sources_Mails Mails/*.cpp Mails/*.h)
 file(GLOB_RECURSE sources_Maps Maps/*.cpp Maps/*.h)
 file(GLOB_RECURSE sources_Miscellaneous Miscellaneous/*.cpp Miscellaneous/*.h)
@@ -70,6 +71,7 @@ set(game_STAT_SRCS
   ${sources_Guilds}
   ${sources_Instances}
   ${sources_Loot}
+  ${sources_Lottery}
   ${sources_Mails}
   ${sources_Maps}
   ${sources_Miscellaneous}
@@ -162,6 +164,7 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/src/server/game/Guilds
   ${CMAKE_SOURCE_DIR}/src/server/game/Instances
   ${CMAKE_SOURCE_DIR}/src/server/game/Loot
+  ${CMAKE_SOURCE_DIR}/src/server/game/Lottery
   ${CMAKE_SOURCE_DIR}/src/server/game/Mails
   ${CMAKE_SOURCE_DIR}/src/server/game/Maps
   ${CMAKE_SOURCE_DIR}/src/server/game/Miscellaneous
@@ -199,3 +202,4 @@ if( GAMEPCH )
     add_native_precompiled_header(game ${CMAKE_SOURCE_DIR}/src/server/game/PrecompiledHeaders/gamePCH)
   endif()
 endif()
+

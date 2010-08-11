@@ -36,6 +36,7 @@
 #include "Vehicle.h"
 #include "Transport.h"
 #include "AchievementMgr.h"
+#include "LotteryMgr.h"
 
 class Player;
 class Creature;
