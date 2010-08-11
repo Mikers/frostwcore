@@ -641,6 +641,29 @@ enum TrinityStrings
     LANG_BG_EY_CAPTURED_FLAG_H          = 685,
     LANG_BG_EY_DROPPED_FLAG             = 686,
     LANG_BG_EY_RESETED_FLAG             = 687,
+	
+    LANG_BG_WG_BATTLE_STARTS            = 756,
+    LANG_BG_WG_DEFENDED                 = 757,
+    LANG_BG_WG_CAPTURED                 = 758,
+    LANG_BG_WG_WORKSHOP_DAMAGED         = 759,
+    LANG_BG_WG_WORKSHOP_DESTROYED       = 760,
+    LANG_BG_WG_TOWER_DAMAGED            = 761,
+    LANG_BG_WG_TOWER_DESTROYED          = 762,
+    LANG_BG_WG_FORTRESS_UNDER_ATTACK    = 763,
+    LANG_BG_WG_SWITCH_FACTION           = 764,
+    LANG_BG_WG_CHANGE_TIMER             = 765,
+    LANG_BG_WG_BATTLE_FORCE_START       = 766,
+    LANG_BG_WG_BATTLE_FORCE_STOP        = 767,
+    LANG_BG_WG_STATUS                   = 768,
+    LANG_BG_WG_DISABLE                  = 769,
+    LANG_BG_WG_ENABLE                   = 770,
+    LANG_BG_WG_RANK1                    = 771,
+    LANG_BG_WG_RANK2                    = 772,
+
+	LANG_BG_WG_WORLD_ANNOUNCE_30        = 780,
+	LANG_BG_WG_WORLD_ANNOUNCE_10        = 781,
+	LANG_BG_WG_WORLD_NO_DEF             = 782,
+	LANG_BG_WG_WORLD_NO_ATK             = 783,
 
     LANG_ARENA_ONE_TOOLOW               = 700,
     LANG_ARENA_ONE_MINUTE               = 701,
@@ -1008,6 +1031,22 @@ enum TrinityStrings
     LANG_BG_SA_H_GY_SOUTH                   = 10071,//The Horde captured the South Graveyard!
     LANG_BG_SA_H_GY_WEST                    = 10072,//The Horde captured the West Graveyard!
     LANG_BG_SA_H_GY_EAST                    = 10073,//The Horde captured the East Graveyard!
+	
+	LANG_BG_IC_START_TWO_MINUTES		= 12001,
+    LANG_BG_IC_START_ONE_MINUTE 		= 12002,
+    LANG_BG_IC_START_HALF_MINUTE		= 12003,
+    LANG_BG_IC_HAS_BEGUN				= 12004,
+    LANG_BG_IC_NODE_TAKEN				= 12005,
+    LANG_BG_IC_ALLY						= 12006,
+    LANG_BG_IC_HORDE					= 12007,
+    LANG_BG_IC_NODE_WORKSHOP			= 12008,
+    LANG_BG_IC_NODE_QUARRY				= 12009,
+    LANG_BG_IC_NODE_REFINERY			= 12010,
+    LANG_BG_IC_NODE_DOCKS				= 12011,
+    LANG_BG_IC_NODE_HANGAR				= 12012,
+    LANG_BG_IC_NODE_ASSAULTED			= 12013,
+    LANG_BG_IC_NODE_DEFENDED			= 12014,
+    LANG_BG_IC_NODE_CLAIMED				= 12015,
 
     // Use for custom patches             11000-11999
     LANG_AUTO_BROADCAST                 = 11000,
