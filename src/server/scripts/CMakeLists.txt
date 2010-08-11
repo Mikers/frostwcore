@@ -40,6 +40,7 @@ set(scripts_STAT_SRCS
   ../game/AI/ScriptedAI/ScriptedFollowerAI.cpp
   ../game/AI/ScriptedAI/ScriptedGuardAI.cpp
   ../game/AI/ScriptedAI/ScriptedSimpleAI.cpp
+  ../game/BossSpellWorker/BossSpellWorker.cpp
 )
 
 if(MSVC)
@@ -84,6 +85,7 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/src/server/game/AI/ScriptedAI
   ${CMAKE_SOURCE_DIR}/src/server/game/AuctionHouse
   ${CMAKE_SOURCE_DIR}/src/server/game/Battlegrounds
+  ${CMAKE_SOURCE_DIR}/src/server/game/BossSpellWorker 
   ${CMAKE_SOURCE_DIR}/src/server/game/Calendar
   ${CMAKE_SOURCE_DIR}/src/server/game/Chat
   ${CMAKE_SOURCE_DIR}/src/server/game/Conditions
