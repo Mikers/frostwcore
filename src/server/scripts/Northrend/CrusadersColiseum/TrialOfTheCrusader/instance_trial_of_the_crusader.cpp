@@ -29,7 +29,7 @@ class instance_trial_of_the_crusader : public InstanceMapScript
 public:
     instance_trial_of_the_crusader() : InstanceMapScript("instance_trial_of_the_crusader", 649) { }
 
-    InstanceScript* GetInstanceData_InstanceMapScript(Map* pMap)
+    InstanceScript* GetInstanceScript(InstanceMap* pMap) const
     {
         return new instance_trial_of_the_crusader_InstanceMapScript(pMap);
     }

@@ -1250,6 +1250,7 @@ void Player::Update(uint32 p_time)
 		    TeleportTo(609, 2401.41, -5633.91, 420.67, 3.664271);
 	}
 
+
     // undelivered mail
     if (m_nextMailDelivereTime && m_nextMailDelivereTime <= time(NULL))
     {
@@ -1854,11 +1855,12 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
 
         return false;                                       // normal client can't teleport to this map...
     }
-    else if((mEntry->Expansion() == 2 && mEntry->MapID != 609) &&  getLevel() < 68)
+	else if((mEntry->Expansion() == 2 && mEntry->MapID != 609) &&  getLevel() < 68)
     {
         GetSession()->SendAreaTriggerMessage(GetSession()->GetTrinityString(LANG_LEVEL_MINREQUIRED),68);
         return false;
     }
+
     else
         sLog.outDebug("Player %s is being teleported to map %u", GetName(), mapid);
 
@@ -2634,6 +2636,8 @@ void Player::GiveXP(uint32 xp, Unit* victim)
 
     uint8 level = getLevel();
 
+    sScriptMgr.OnGivePlayerXP(this, xp, victim);
+
     // Favored experience increase START
     uint32 zone = GetZoneId();
     float favored_exp_mult = 0;
@@ -2674,6 +2678,8 @@ void Player::GiveLevel(uint8 level)
 {
     if (level == getLevel())
         return;
+
+    sScriptMgr.OnPlayerLevelChanged(this, level);
 
     PlayerLevelInfo info;
     sObjectMgr.GetPlayerLevelInfo(getRace(),getClass(),level,&info);
@@ -4003,6 +4009,8 @@ uint32 Player::resetTalentsCost() const
 
 bool Player::resetTalents(bool no_cost)
 {
+    sScriptMgr.OnPlayerTalentsReset(this, no_cost);
+
     // not need after this call
     if (HasAtLoginFlag(AT_LOGIN_RESET_TALENTS))
         RemoveAtLoginFlag(AT_LOGIN_RESET_TALENTS, true);
@@ -4088,6 +4096,12 @@ bool Player::resetTalents(bool no_cost)
     */
 
     return true;
+}
+
+void Player::SetFreeTalentPoints(uint32 points)
+{
+    sScriptMgr.OnPlayerFreeTalentPointsChanged(this, points);
+    SetUInt32Value(PLAYER_CHARACTER_POINTS1,points);
 }
 
 Mail* Player::GetMail(uint32 id)
@@ -6446,6 +6460,7 @@ void Player::CheckAreaExploreAndOutdoor()
                 {
                     XP = uint32(sObjectMgr.GetBaseXP(p->area_level)*sWorld.getRate(RATE_XP_EXPLORE));
                 }
+
                 GiveXP(XP, NULL);
                 SendExplorationExperience(area,XP);
             }
@@ -6704,6 +6719,7 @@ bool Player::RewardHonor(Unit *uVictim, uint32 groupsize, int32 honor, bool pvpt
     uint32 victim_rank = 0;
 	uint32 rank_diff = 0;
 
+
     // need call before fields update to have chance move yesterday data to appropriate fields before today data change.
     UpdateHonorFields();
 
@@ -6907,6 +6923,7 @@ void Player::UpdateKnownTitles()
     if (old_title > 0 && old_title < (2*HKRANKMAX-1) && new_title > old_title)
         SetUInt32Value(PLAYER_CHOSEN_TITLE,new_title);
 }
+
 
 void Player::ModifyHonorPoints(int32 value)
 {
@@ -8693,7 +8710,6 @@ void Player::SendInitWorldStates(uint32 zoneid, uint32 areaid)
                                                             // 7 1 - Arena season in progress, 0 - end of season
     data << uint32(0xC77) << uint32(sWorld.getConfig(CONFIG_ARENA_SEASON_IN_PROGRESS));
                                                             // 8 Arena season id
-    // ---
     data << uint32(0xF3D) << uint32(sWorld.getConfig(CONFIG_ARENA_SEASON_ID));
 
     if (mapid == 530)                                       // Outland
@@ -16179,7 +16195,7 @@ bool Player::LoadFromDB(uint32 guid, SqlQueryHolder *holder)
     // Map could be changed before
     mapEntry = sMapStore.LookupEntry(mapId);
     // client without expansion support
-    if(mapEntry && GetSession()->Expansion() < mapEntry->Expansion() || ((mapEntry->Expansion() == 2 && mapEntry->MapID != 609) &&  getLevel() < 68))
+	if(mapEntry && GetSession()->Expansion() < mapEntry->Expansion() || ((mapEntry->Expansion() == 2 && mapEntry->MapID != 609) &&  getLevel() < 68))
     {
         if (GetSession()->Expansion() < mapEntry->Expansion())
         {
@@ -17785,7 +17801,7 @@ void Player::SaveToDB()
     ss << uint32(GetByteValue(PLAYER_FIELD_BYTES, 2));
     ss << ")";
 
-	CharacterDatabase.BeginTransaction();
+    CharacterDatabase.BeginTransaction();
 
     CharacterDatabase.Execute(ss.str().c_str());
 
@@ -19080,7 +19096,7 @@ void Player::RemoveSpellMods(Spell * spell)
     {
 		// Used in Player::RemovePrecastSpellMods
 		if (i == SPELLMOD_CASTING_TIME || i == SPELLMOD_COST)
-			continue;
+			continue
         for (SpellModList::iterator itr = m_spellMods[i].begin(); itr != m_spellMods[i].end();)
         {
             SpellModifier *mod = *itr;
@@ -19656,6 +19672,68 @@ void Player::InitDisplayIds()
     }
 }
 
+inline bool Player::_StoreOrEquipNewItem(uint32 vendorslot, uint32 item, uint8 count, uint8 bag, uint8 slot, int32 price, ItemPrototype const *pProto, Creature *pVendor, VendorItem const* crItem, bool bStore)
+{
+    ItemPosCountVec vDest;
+    uint16 uiDest;
+    uint8 msg = bStore ? 
+        CanStoreNewItem(bag, slot, vDest, item, pProto->BuyCount * count) :
+        CanEquipNewItem(slot, uiDest, item, false);
+    if (msg != EQUIP_ERR_OK)
+    {
+        SendEquipError(msg, NULL, NULL, item);
+        return false;
+    }
+
+    ModifyMoney(-price);
+
+    if (crItem->ExtendedCost)                            // case for new honor system
+    {
+        ItemExtendedCostEntry const* iece = sItemExtendedCostStore.LookupEntry(crItem->ExtendedCost);
+        if (iece->reqhonorpoints)
+            ModifyHonorPoints(- int32(iece->reqhonorpoints * count));
+
+        if (iece->reqarenapoints)
+            ModifyArenaPoints(- int32(iece->reqarenapoints * count));
+
+        for (uint8 i = 0; i < 5; ++i)
+        {
+            if (iece->reqitem[i])
+                DestroyItemCount(iece->reqitem[i], (iece->reqitemcount[i] * count), true);
+        }
+    }
+
+    Item* it = bStore ?
+        StoreNewItem(vDest, item, true) :
+        EquipNewItem(uiDest, item, true);
+    if (it)
+    {
+        uint32 new_count = pVendor->UpdateVendorItemCurrentCount(crItem,pProto->BuyCount * count);
+
+        WorldPacket data(SMSG_BUY_ITEM, (8+4+4+4));
+        data << uint64(pVendor->GetGUID());
+        data << uint32(vendorslot + 1);                   // numbered from 1 at client
+        data << int32(crItem->maxcount > 0 ? new_count : 0xFFFFFFFF);
+        data << uint32(count);
+        GetSession()->SendPacket(&data);
+        SendNewItem(it, pProto->BuyCount * count, true, false, false);
+
+        if (!bStore)
+            AutoUnequipOffhandIfNeed();
+
+        if (pProto->Flags & ITEM_PROTO_FLAG_REFUNDABLE && crItem->ExtendedCost && pProto->GetMaxStackSize() == 1)
+        {
+            it->SetFlag(ITEM_FIELD_FLAGS, ITEM_FLAG_REFUNDABLE);
+            it->SetRefundRecipient(GetGUIDLow());
+            it->SetPaidMoney(price);
+            it->SetPaidExtendedCost(crItem->ExtendedCost);
+            it->SaveRefundDataToDB();
+            AddRefundReference(it->GetGUIDLow());
+        }
+    }
+    return true;
+}
+
 // Return true is the bought item has a max count to force refresh of window by caller
 bool Player::BuyItemFromVendorSlot(uint64 vendorguid, uint32 vendorslot, uint32 item, uint8 count, uint8 bag, uint8 slot)
 {
@@ -19693,13 +19771,13 @@ bool Player::BuyItemFromVendorSlot(uint64 vendorguid, uint32 vendorslot, uint32 
 
     if (vendorslot >= vItems->GetItemCount())
     {
-        SendBuyError( BUY_ERR_CANT_FIND_ITEM, pCreature, item, 0);
+        SendBuyError(BUY_ERR_CANT_FIND_ITEM, pCreature, item, 0);
         return false;
     }
 
     VendorItem const* crItem = vItems->GetItem(vendorslot);
     // store diff item (cheating)
-    if(!crItem || crItem->item != item)
+    if (!crItem || crItem->item != item)
     {
         SendBuyError(BUY_ERR_CANT_FIND_ITEM, pCreature, item, 0);
         return false;
@@ -19777,54 +19855,8 @@ bool Player::BuyItemFromVendorSlot(uint64 vendorguid, uint32 vendorslot, uint32 
 
     if ((bag == NULL_BAG && slot == NULL_SLOT) || IsInventoryPos(bag, slot))
     {
-        ItemPosCountVec dest;
-        uint8 msg = CanStoreNewItem(bag, slot, dest, item, pProto->BuyCount * count);
-        if (msg != EQUIP_ERR_OK)
-        {
-            SendEquipError(msg, NULL, NULL, item);
+        if (!_StoreOrEquipNewItem(vendorslot, item, count, bag, slot, price, pProto, pCreature, crItem, true))
             return false;
-        }
-
-        ModifyMoney(-(int32)price);
-
-        if (crItem->ExtendedCost)                            // case for new honor system
-        {
-            ItemExtendedCostEntry const* iece = sItemExtendedCostStore.LookupEntry(crItem->ExtendedCost);
-            if (iece->reqhonorpoints)
-                ModifyHonorPoints(- int32(iece->reqhonorpoints * count));
-
-            if (iece->reqarenapoints)
-                ModifyArenaPoints(- int32(iece->reqarenapoints * count));
-
-            for (uint8 i = 0; i < 5; ++i)
-            {
-                if (iece->reqitem[i])
-                    DestroyItemCount(iece->reqitem[i], (iece->reqitemcount[i] * count), true);
-            }
-        }
-
-        if (Item *it = StoreNewItem(dest, item, true))
-        {
-            uint32 new_count = pCreature->UpdateVendorItemCurrentCount(crItem,pProto->BuyCount * count);
-
-            WorldPacket data(SMSG_BUY_ITEM, (8+4+4+4));
-            data << uint64(pCreature->GetGUID());
-            data << uint32(vendorslot+1);                   // numbered from 1 at client
-            data << int32(crItem->maxcount > 0 ? new_count : 0xFFFFFFFF);
-            data << uint32(count);
-            GetSession()->SendPacket(&data);
-            SendNewItem(it, pProto->BuyCount*count, true, false, false);
-
-            if (pProto->Flags & ITEM_PROTO_FLAG_REFUNDABLE && crItem->ExtendedCost && pProto->GetMaxStackSize() == 1)
-            {
-                it->SetFlag(ITEM_FIELD_FLAGS, ITEM_FLAG_REFUNDABLE);
-                it->SetRefundRecipient(GetGUIDLow());
-                it->SetPaidMoney(price);
-                it->SetPaidExtendedCost(crItem->ExtendedCost);
-                it->SaveRefundDataToDB();
-                AddRefundReference(it->GetGUIDLow());
-            }
-        }
     }
     else if (IsEquipmentPos(bag, slot))
     {
@@ -19833,57 +19865,8 @@ bool Player::BuyItemFromVendorSlot(uint64 vendorguid, uint32 vendorslot, uint32 
             SendEquipError(EQUIP_ERR_ITEM_CANT_BE_EQUIPPED, NULL, NULL);
             return false;
         }
-
-        uint16 dest;
-        uint8 msg = CanEquipNewItem(slot, dest, item, false);
-        if (msg != EQUIP_ERR_OK)
-        {
-            SendEquipError(msg, NULL, NULL, item);
+        if (!_StoreOrEquipNewItem(vendorslot, item, count, bag, slot, price, pProto, pCreature, crItem, false))
             return false;
-        }
-
-        ModifyMoney(-(int32)price);
-        if (crItem->ExtendedCost)                            // case for new honor system
-        {
-            ItemExtendedCostEntry const* iece = sItemExtendedCostStore.LookupEntry(crItem->ExtendedCost);
-            if (iece->reqhonorpoints)
-                ModifyHonorPoints(- int32(iece->reqhonorpoints * count));
-
-            if (iece->reqarenapoints)
-                ModifyArenaPoints(- int32(iece->reqarenapoints * count));
-
-            for (uint8 i = 0; i < 5; ++i)
-            {
-                if (iece->reqitem[i])
-                    DestroyItemCount(iece->reqitem[i], iece->reqitemcount[i] * count, true);
-            }
-        }
-
-        if (Item *it = EquipNewItem(dest, item, true))
-        {
-            uint32 new_count = pCreature->UpdateVendorItemCurrentCount(crItem,pProto->BuyCount * count);
-
-            WorldPacket data(SMSG_BUY_ITEM, (8+4+4+4));
-            data << uint64(pCreature->GetGUID());
-            data << uint32(vendorslot + 1);                 // numbered from 1 at client
-            data << int32(crItem->maxcount > 0 ? new_count : 0xFFFFFFFF);
-            data << uint32(count);
-            GetSession()->SendPacket(&data);
-
-            SendNewItem(it, pProto->BuyCount*count, true, false, false);
-
-            AutoUnequipOffhandIfNeed();
-
-            if (pProto->Flags & ITEM_PROTO_FLAG_REFUNDABLE && crItem->ExtendedCost && pProto->GetMaxStackSize() == 1)
-            {
-                it->SetFlag(ITEM_FIELD_FLAGS, ITEM_FLAG_REFUNDABLE);
-                it->SetRefundRecipient(GetGUIDLow());
-                it->SetPaidMoney(price);
-                it->SetPaidExtendedCost(crItem->ExtendedCost);
-                it->SaveRefundDataToDB();
-                AddRefundReference(it->GetGUIDLow());
-            }
-        }
     }
     else
     {
@@ -20795,6 +20778,28 @@ void Player::UpdateVisibilityForPlayer()
 void Player::InitPrimaryProfessions()
 {
     SetFreePrimaryProfessions(sWorld.getConfig(CONFIG_MAX_PRIMARY_TRADE_SKILL));
+}
+
+void Player::ModifyMoney(int32 d)
+{
+    sScriptMgr.OnPlayerMoneyChanged(this, d);
+
+    if (d < 0)
+        SetMoney (GetMoney() > uint32(-d) ? GetMoney() + d : 0);
+    else
+    {
+        uint32 newAmount = 0;
+        if (GetMoney() < uint32(MAX_MONEY_AMOUNT - d))
+            newAmount = GetMoney() + d;
+        else
+        {
+            // "At Gold Limit"
+            newAmount = MAX_MONEY_AMOUNT;
+            if (d)
+                SendEquipError(EQUIP_ERR_TOO_MUCH_GOLD, NULL, NULL);
+        }
+        SetMoney (newAmount);
+    }
 }
 
 Unit * Player::GetSelectedUnit() const
@@ -24091,7 +24096,6 @@ void Player::_LoadRandomBGStatus(QueryResult_AutoPtr result)
     if (result)
         m_IsBGRandomWinner = true;
 }
-
 
 float Player::GetAverageItemLevel()
 {
