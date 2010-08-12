@@ -551,6 +551,9 @@ void AddSC_outdoorpvp_si();
 void AddSC_outdoorpvp_tf();
 void AddSC_outdoorpvp_zm();
 
+// player
+void AddSC_chat_log();
+
 #endif
 
 void AddScripts()
@@ -613,6 +616,7 @@ void AddWorldScripts()
     AddSC_npcs_special();
     AddSC_npc_taxi();
     AddSC_achievement_scripts();
+    AddSC_chat_log();
     //AddSC_npc_teleport();
     //AddSC_guildmaster();
 #endif
