@@ -1268,6 +1268,12 @@ AchievementCriteriaScript::AchievementCriteriaScript(const char* name)
     ScriptMgr::ScriptRegistry<AchievementCriteriaScript>::AddScript(this);
 }
 
+PlayerScript::PlayerScript(const char* name)
+    : ScriptObject(name)
+{
+    ScriptMgr::ScriptRegistry<PlayerScript>::AddScript(this);
+}
+
 // Instantiate static members of ScriptMgr::ScriptRegistry.
 template<class TScript> std::map<uint32, TScript*> ScriptMgr::ScriptRegistry<TScript>::ScriptPointerList;
 template<class TScript> uint32 ScriptMgr::ScriptRegistry<TScript>::_scriptIdCounter = 0;
