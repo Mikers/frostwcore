@@ -105,6 +105,7 @@ enum Misc
 
 struct boss_black_knightAI : public ScriptedAI
 {
+public:
     boss_black_knightAI(Creature* pCreature) : ScriptedAI(pCreature)
     {
         pInstance = pCreature->GetInstanceScript();
@@ -405,60 +406,70 @@ struct boss_black_knightAI : public ScriptedAI
     }
 };
 
-CreatureAI* GetAI_boss_black_knight(Creature *pCreature)
+CreatureAI* GetAI(Creature *pCreature) const
 {
     return new boss_black_knightAI (pCreature);
 }
 
-struct npc_risen_ghoulAI : public ScriptedAI
+class npc_risen_ghoul : public CreatureScript
 {
-    npc_risen_ghoulAI(Creature* pCreature) : ScriptedAI(pCreature) {}
+public:
+    npc_risen_ghoul() : CreatureScript("npc_risen_ghoul") { }
+	struct npc_risen_ghoulAI : public ScriptedAI
+	{
+		npc_risen_ghoulAI(Creature* pCreature) : ScriptedAI(pCreature) {}
 
-    uint32 uiAttackTimer;
+		uint32 uiAttackTimer;
 
-    void Reset()
-    {
-        uiAttackTimer = 3500;
-    }
+		void Reset()
+		{
+			uiAttackTimer = 3500;
+		}
 	
-    void UpdateAI(const uint32 uiDiff)
-    {
-        if (!UpdateVictim())
-            return;
+		void UpdateAI(const uint32 uiDiff)
+		{
+			if (!UpdateVictim())
+				return;
 
-        if (uiAttackTimer <= uiDiff)
-        {
-            if (Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM, 1, 100, true))
-            {
-                if (pTarget && pTarget->isAlive())
-                DoCast(pTarget,SPELL_LEAP);
-            }
-            uiAttackTimer = 3500;
-        } else uiAttackTimer -= uiDiff;
+			if (uiAttackTimer <= uiDiff)
+			{
+				if (Unit* pTarget = SelectTarget(SELECT_TARGET_RANDOM, 1, 100, true))
+				{
+					if (pTarget && pTarget->isAlive())
+					DoCast(pTarget,SPELL_LEAP);
+				}
+				uiAttackTimer = 3500;
+			} else uiAttackTimer -= uiDiff;
 
-        DoMeleeAttackIfReady();
-    }
+			DoMeleeAttackIfReady();
+		}
 };
 
-CreatureAI* GetAI_npc_risen_ghoul(Creature* pCreature)
+CreatureAI* GetAI(Creature* pCreature) const
 {
     return new npc_risen_ghoulAI(pCreature);
 }
 
-struct npc_black_knight_skeletal_gryphonAI : public npc_escortAI
+class npc_black_knight_skeletal_gryphon : public CreatureScript
 {
-    npc_black_knight_skeletal_gryphonAI(Creature* pCreature) : npc_escortAI(pCreature)
-    {
-        Start(false,true,0,NULL);
-		pInstance = pCreature->GetInstanceScript();
-    }
-	
-	InstanceScript* pInstance;
+public:
+    npc_black_knight_skeletal_gryphon() : CreatureScript("npc_black_knight_skeletal_gryphon") { }
 
-    void WaypointReached(uint32 uiPointId)
-    {
-        switch(uiPointId)
-        {
+
+	struct npc_black_knight_skeletal_gryphonAI : public npc_escortAI
+	{
+		npc_black_knight_skeletal_gryphonAI(Creature* pCreature) : npc_escortAI(pCreature)
+		{
+			Start(false,true,0,NULL);
+			pInstance = pCreature->GetInstanceScript();
+		}
+	
+		InstanceScript* pInstance;
+
+		void WaypointReached(uint32 uiPointId)
+		{
+			switch(uiPointId)
+			{
                 case 1:               	    
 				me->SetSpeed(MOVE_FLIGHT , 2.0f);				
 				break;
@@ -504,39 +515,44 @@ struct npc_black_knight_skeletal_gryphonAI : public npc_escortAI
 				me->SetUnitMovementFlags(MOVEMENTFLAG_WALKING);
 				me->SummonCreature(VEHICLE_GR,744.841,634.505,411.575, 2.79);				
 				break;
-        }
-    }
+			}
+		}
 
 
-    void UpdateAI(const uint32 uiDiff)
-    {
-        npc_escortAI::UpdateAI(uiDiff);
+		void UpdateAI(const uint32 uiDiff)
+		{
+			npc_escortAI::UpdateAI(uiDiff);
 
-        if (!UpdateVictim())
-            return;
-    }
+			if (!UpdateVictim())
+				return;
+		}
 
 };
 
-CreatureAI* GetAI_npc_black_knight_skeletal_gryphon(Creature* pCreature)
+CreatureAI* GetAI(Creature* pCreature) const
 {
     return new npc_black_knight_skeletal_gryphonAI(pCreature);
 }
 
-struct npc_grAI : public npc_escortAI
+class npc_black_knight_skeletal_gryphon : public CreatureScript
 {
-    npc_grAI(Creature* pCreature) : npc_escortAI(pCreature)
-    {
-        Start(false,true,0,NULL);
-		pInstance = pCreature->GetInstanceScript();
-    }
-	
-	InstanceScript* pInstance;
+public:
+    npc_gr() : CreatureScript("npc_gr") { }
 
-    void WaypointReached(uint32 uiPointId)
-    {
-        switch(uiPointId)
-        {
+	struct npc_grAI : public npc_escortAI
+	{
+		npc_grAI(Creature* pCreature) : npc_escortAI(pCreature)
+		{
+			Start(false,true,0,NULL);
+			pInstance = pCreature->GetInstanceScript();
+		}
+	
+		InstanceScript* pInstance;
+
+		void WaypointReached(uint32 uiPointId)
+		{
+			switch(uiPointId)
+			{
                 case 1:
 				me->SetUnitMovementFlags(MOVEMENTFLAG_FLYING);
 				if (pInstance)
@@ -583,7 +599,7 @@ struct npc_grAI : public npc_escortAI
                 pInstance->SetData(DATA_KNIGHT, DONE);
 				}	
 				break;
-        }
+			}
     }
 
 
@@ -597,11 +613,15 @@ struct npc_grAI : public npc_escortAI
 
 };
 
-CreatureAI* GetAI_npc_gr(Creature* pCreature)
+CreatureAI* GetAI(Creature* pCreature) const
 {
     return new npc_grAI(pCreature);
 }
 
 void AddSC_boss_black_knight()
 {
+	new boss_black_knight();
+	new npc_risen_ghoul();
+    new npc_black_knight_skeletal_gryphon();
+	new npc_gr();
 }
