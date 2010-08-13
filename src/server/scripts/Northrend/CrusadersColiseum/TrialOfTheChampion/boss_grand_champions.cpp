@@ -101,8 +101,8 @@ void AggroAllPlayers(Creature* pTemp)
     {
         if (Player* pPlayer = i->getSource())
         {
-            if (pPlayer->isGameMaster())
-                continue;
+            //if (pPlayer->isGameMaster())
+            //    continue;
 
             if (pPlayer->isAlive())
             {
