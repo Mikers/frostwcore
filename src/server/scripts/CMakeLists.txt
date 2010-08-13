@@ -35,6 +35,8 @@ set(scripts_STAT_SRCS
   ${scripts_spells}
   ${scripts_examples}
   ${scripts_outdoorpvp}
+  Custom/guildmaster.cpp
+  Custom/npc_teleport.cpp
   ../game/AI/ScriptedAI/ScriptedEscortAI.cpp
   ../game/AI/ScriptedAI/ScriptedCreature.cpp
   ../game/AI/ScriptedAI/ScriptedFollowerAI.cpp

@@ -1746,8 +1746,7 @@ class go_malygos_iris : public GameObjectScript
 {
 public:
     go_malygos_iris() : GameObjectScript("go_malygos_iris") { }
-
-bool GOHello_go_malygos_iris(Player *pPlayer, GameObject* pGO)
+bool OnGossipHello(Player *pPlayer, GameObject* pGO)
 {
        sLog.outError("Clique");
        if (Creature *malygos = pGO->FindNearestCreature(NPC_MALYGOS, 300.0f, true))

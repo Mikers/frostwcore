@@ -26,6 +26,7 @@
 #include "ProgressBar.h"
 #include "ScriptLoader.h"
 #include "ScriptSystem.h"
+#include "../Customs/ScNpcTeleport.h"
 
 // Utility macros to refer to the script registry.
 #define SCR_REG_MAP(T) ScriptRegistry<T>::ScriptMap
@@ -136,7 +137,7 @@ void DoScriptText(int32 iTextEntry, WorldObject* pSource, Unit* pTarget)
 }
 
 ScriptMgr::ScriptMgr()
-    : _scriptCount(0)
+	: _scriptCount(0)
 {
 }
 
@@ -177,6 +178,9 @@ ScriptMgr::~ScriptMgr()
 void ScriptMgr::Initialize()
 {
     LoadDatabase();
+	
+	// Npc teleport
+	LoadNpcTele();
 
     sLog.outString("Loading C++ scripts");
     barGoLink bar(1);

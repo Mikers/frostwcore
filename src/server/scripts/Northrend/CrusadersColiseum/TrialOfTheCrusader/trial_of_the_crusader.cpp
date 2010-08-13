@@ -201,8 +201,9 @@ public:
           }
         } else DelayTimer -= diff;
     }
+	};
 
-bool GossipHello(Player* pPlayer, Creature* pCreature)
+bool OnGossipHello(Player* pPlayer, Creature* pCreature)
 {
  
     InstanceScript* pInstance;
@@ -234,7 +235,7 @@ bool GossipHello(Player* pPlayer, Creature* pCreature)
     return true;
 }
 
-bool GossipSelec(Player* pPlayer, Creature* pCreature, uint32 uiSender, uint32 uiAction)
+bool OnGossipSelect(Player* pPlayer, Creature* pCreature, uint32 uiSender, uint32 uiAction)
 {
     InstanceScript* pInstance;
     pInstance = (InstanceScript*)pCreature->GetInstanceScript();
@@ -242,7 +243,8 @@ bool GossipSelec(Player* pPlayer, Creature* pCreature, uint32 uiSender, uint32 u
 
     pPlayer->CLOSE_GOSSIP_MENU();
 
-    switch(uiAction) {
+    switch(uiAction) 
+	{
         case GOSSIP_ACTION_INFO_DEF+1:
             if (pInstance->GetData(TYPE_BEASTS) != DONE)
             {
@@ -300,11 +302,10 @@ bool GossipSelec(Player* pPlayer, Creature* pCreature, uint32 uiSender, uint32 u
             pInstance->SetData(TYPE_STAGE,10);
             break;
 
-  };
+    };
 
 return true;
 }
-	};
 };
 
 class boss_lich_king_toc : public CreatureScript

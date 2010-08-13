@@ -937,7 +937,6 @@ void Creature::UpdateDamagePhysical(WeaponAttackType attType)
 #define ENTRY_VIPER             19921
 #define ENTRY_SNAKE             19833
 
-
 bool Guardian::UpdateStats(Stats stat)
 {
     if (stat >= MAX_STATS)
@@ -1097,9 +1096,9 @@ void Guardian::UpdateMaxHealth()
     float value   = GetModifierValue(unitMod, BASE_VALUE) + GetCreateHealth();
     value  *= GetModifierValue(unitMod, BASE_PCT);
 	if (GetEntry()==ENTRY_GHOUL)
-		value  += GetModifierValue(unitMod, TOTAL_VALUE) + (stamina+GetCreateStat(STAT_STAMINA)) * multiplicator;
+	value  += GetModifierValue(unitMod, TOTAL_VALUE) + (stamina+GetCreateStat(STAT_STAMINA)) * multiplicator;
 	else
-		value  += GetModifierValue(unitMod, TOTAL_VALUE) + stamina * multiplicator;
+    value  += GetModifierValue(unitMod, TOTAL_VALUE) + stamina * multiplicator;
     value  *= GetModifierValue(unitMod, TOTAL_PCT);
 
     SetMaxHealth((uint32)value);

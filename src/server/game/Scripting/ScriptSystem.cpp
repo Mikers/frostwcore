@@ -23,6 +23,7 @@
 #include "ProgressBar.h"
 #include "ObjectMgr.h"
 #include "DatabaseEnv.h"
+#include "../Customs/ScNpcTeleport.h"
 
 SystemMgr::SystemMgr()
 {
