@@ -28,8 +28,8 @@ EndScriptData */
 
 enum eEnums
 {
-	SAY_WRONG               = -1999926,
-	SAY_CORRECT             = -1999927
+	SAY_WRONG               = -1999990,
+	SAY_CORRECT             = -1999991
 };
 
 #define GOSSIP_LOTTERY_YES     "My number..."
