@@ -452,7 +452,8 @@ public:
             }
         return;
     }
-bool GossipHello(Player *player, Creature* pCreature)
+	};
+bool OnGossipHello(Player *player, Creature* pCreature)
 {
     InstanceScript *pInstance = (InstanceScript *) pCreature->GetInstanceScript();
     if(!pInstance) return true;
@@ -462,7 +463,6 @@ bool GossipHello(Player *player, Creature* pCreature)
         player->CLOSE_GOSSIP_MENU();
     return true;
 }
-	};
 };
 
 
@@ -509,7 +509,8 @@ public:
             }
         return;
     }	
-bool GossipHello(Player *player, Creature* pCreature)
+	};
+bool OnGossipHello(Player *player, Creature* pCreature)
 {
     InstanceScript *pInstance = (InstanceScript *) pCreature->GetInstanceScript();
     if(!pInstance) return true;
@@ -519,7 +520,6 @@ bool GossipHello(Player *player, Creature* pCreature)
         player->CLOSE_GOSSIP_MENU();
     return true;
 }
-	};
 };
 
 class mob_unleashed_dark : public CreatureScript

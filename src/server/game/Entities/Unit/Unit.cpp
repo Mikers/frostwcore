@@ -706,20 +706,39 @@ uint32 Unit::DealDamage(Unit *pVictim, uint32 damage, CleanDamage const* cleanDa
         DEBUG_LOG("DealDamage: victim just died");
 
         if (pVictim->GetTypeId() == TYPEID_PLAYER)
+        {
             pVictim->ToPlayer()->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_TOTAL_DAMAGE_RECEIVED, health);
+            // call before auras are removed
+            if (Player* killer = ToPlayer())
+                killer->GetAchievementMgr().UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_SPECIAL_PVP_KILL, 0, 0, pVictim);
+        }
 
         Kill(pVictim, durabilityLoss);
 
         //Hook for OnPVPKill Event
-        if (pVictim->GetTypeId() == TYPEID_PLAYER && this->GetTypeId() == TYPEID_PLAYER)
+        if (this->GetTypeId() == TYPEID_PLAYER)
         {
-            Player *killer = this->ToPlayer();
-            Player *killed = pVictim->ToPlayer();
+            if (pVictim->GetTypeId() == TYPEID_PLAYER)
+            {
+                Player *killer = this->ToPlayer();
+                Player *killed = pVictim->ToPlayer();
+                sScriptMgr.OnPVPKill(killer, killed);
+            }
+            else if (pVictim->GetTypeId() == TYPEID_UNIT)
+            {
+                Player *killer = this->ToPlayer();
+                Creature *killed = pVictim->ToCreature();
+                sScriptMgr.OnCreatureKill(killer, killed);
+            }
         }
-        if (pVictim->GetTypeId() == TYPEID_UNIT && this->GetTypeId() == TYPEID_PLAYER)
+        else if (this->GetTypeId() == TYPEID_UNIT)
         {
-            Player *killer = this->ToPlayer();
-            Creature *pCreature = (pVictim->ToCreature());
+            if (pVictim->GetTypeId() == TYPEID_PLAYER)
+            {
+                Creature *killer = this->ToCreature();
+                Player *killed = pVictim->ToPlayer();
+                sScriptMgr.OnPlayerKilledByCreature(killer, killed);
+            }
         }
     }
     else                                                    // if (health <= damage)
@@ -9865,7 +9884,7 @@ int32 Unit::DealHeal(Unit *pVictim, uint32 addhealth, SpellEntry const *spellPro
     }
 
     if (pVictim->GetTypeId() == TYPEID_PLAYER)
-    { 
+    {      
         pVictim->ToPlayer()->GetAchievementMgr().UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_TOTAL_HEALING_RECEIVED, gain);
         pVictim->ToPlayer()->GetAchievementMgr().UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_HIGHEST_HEALING_RECEIVED, addhealth);
     }
@@ -15453,8 +15472,8 @@ bool Unit::SetCharmedBy(Unit* charmer, CharmType type)
     }
 
     // Set charmed
-     Map* pMap = GetMap();
-     if (!IsVehicle() || (IsVehicle() && pMap && !pMap->IsBattleground()))
+    Map* pMap = GetMap();
+    if (!IsVehicle() || (IsVehicle() && pMap && !pMap->IsBattleground()))
         setFaction(charmer->getFaction());
 
     charmer->SetCharm(this, true);
