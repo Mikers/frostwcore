@@ -4004,7 +4004,6 @@ void AuraEffect::HandleModPossessPet(AuraApplication const * aurApp, uint8 mode,
     //if (caster->ToPlayer()->GetPet() != target)
     //    return;
 
-    Unit* target = aurApp->GetTarget();
     if (target->GetTypeId() != TYPEID_UNIT || !target->ToCreature()->isPet())
         return;
 
