@@ -19096,7 +19096,7 @@ void Player::RemoveSpellMods(Spell * spell)
     {
 		// Used in Player::RemovePrecastSpellMods
 		if (i == SPELLMOD_CASTING_TIME || i == SPELLMOD_COST)
-			continue
+			continue;
         for (SpellModList::iterator itr = m_spellMods[i].begin(); itr != m_spellMods[i].end();)
         {
             SpellModifier *mod = *itr;
