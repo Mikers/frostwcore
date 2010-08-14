@@ -21,6 +21,7 @@
 void AddSC_strand_of_the_ancients();
 
 //custom
+void AddSC_npc_lottery();
 
 //examples
 void AddSC_example_creature();
@@ -569,7 +570,7 @@ void AddScripts()
 	AddSC_strand_of_the_ancients();
 
     //custom
-
+	AddSC_npc_lottery();
     //examples
     AddSC_example_creature();
     AddSC_example_escort();
