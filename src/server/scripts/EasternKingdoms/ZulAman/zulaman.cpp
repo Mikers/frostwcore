@@ -203,7 +203,7 @@ class npc_zulaman_harrison_jones : public CreatureScript
 	
         struct npc_zulaman_hostageAI : public ScriptedAI
         {
-			bool GossipHello(Player* pPlayer, Creature* pCreature)
+			bool OnGossipHello(Player* pPlayer, Creature* pCreature)
 			{
 				InstanceScript* pInstance = pCreature->GetInstanceScript();
 				if(pInstance)

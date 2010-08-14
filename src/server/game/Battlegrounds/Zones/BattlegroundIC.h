@@ -1,7 +1,7 @@
 /* private core team. */
 
-#ifndef __BattlegroundIC_H
-#define __BattlegroundIC_H
+#ifndef __BATTLEGROUNDIC_H
+#define __BATTLEGROUNDIC_H
 
 #include "Formulas.h"
 
