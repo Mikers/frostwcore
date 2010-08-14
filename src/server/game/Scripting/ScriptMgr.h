@@ -13,6 +13,7 @@
 #include "DBCStructure.h"
 #include "Config.h"
 #include "ObjectMgr.h"
+#include "LotteryMgr.h"
 
 class Player;
 class Creature;

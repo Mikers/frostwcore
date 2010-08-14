@@ -72,6 +72,7 @@
 #include "DisableMgr.h"
 #include "CharacterDatabaseCleaner.h"
 #include "RASocket.h"
+#include "LotteryMgr.h"
 
 volatile bool World::m_stopEvent = false;
 uint8 World::m_ExitCode = SHUTDOWN_EXIT_CODE;
@@ -1487,6 +1488,9 @@ void World::SetInitialWorldSettings()
 
     sLog.outString("Loading Game Event Data...");
     gameeventmgr.LoadFromDB();
+
+	sLog.outString("Loading Lottery Data...");
+    sLotteryMgr.LoadLottery();
 
     sLog.outString("Loading Weather Data...");
     objmgr.LoadWeatherData();
