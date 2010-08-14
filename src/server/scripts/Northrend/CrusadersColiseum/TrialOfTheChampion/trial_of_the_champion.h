@@ -19,8 +19,6 @@ enum eData
     DATA_START,
     DATA_IN_POSITION,
     DATA_ARGENT_SOLDIER_DEFEATED,
-	DATA_BLACK_KNIGHT,
-	DATA_KNIGHT
 };
 
 enum Data64
@@ -54,33 +52,27 @@ enum eNpcs
     NPC_JAELYNE                 = 34657,
     NPC_LANA                    = 34703,
 
-	// Crusader Champions
     NPC_EADRIC                  = 35119,
     NPC_PALETRESS               = 34928,
 
-	// Crusader mobs
     NPC_ARGENT_LIGHWIELDER      = 35309,
     NPC_ARGENT_MONK             = 35305,
     NPC_PRIESTESS               = 35307,
 
-	// Black Knight
     NPC_BLACK_KNIGHT            = 35451,
-	
-	// Black Knight's add
+
     NPC_RISEN_JAEREN            = 35545,
     NPC_RISEN_ARELAS            = 35564,
 	
-	// Announcer	
-    NPC_JAEREN_AN               = 35591,
-    NPC_ARELAS_AN               = 35592,
-
-	// Memory	
+    NPC_JAEREN_AN               = 35589,
+    NPC_ARELAS_AN               = 35604,
+	
 	MEMORY_ALGALON				= 35052,
 	MEMORY_ARCHIMONDE			= 35041,
 	MEMORY_CHROMAGGUS			= 35033,
 	MEMORY_CYANIGOSA			= 35046,
 	MEMORY_DELRISSA				= 35043,
-	MEMORY_ECK			     	= 35047,
+	MEMORY_ECK				= 35047,
 	MEMORY_ENTROPIUS			= 35044,
 	MEMORY_GRUUL				= 35039,
 	MEMORY_HAKKAR				= 35034,
@@ -101,7 +93,6 @@ enum eNpcs
 	MEMORY_VEKNILASH			= 35036,
 	MEMORY_VEZAX				= 35051,
 
-	// Announcer Start Event
     NPC_JAEREN                  = 35004,
     NPC_ARELAS                  = 35005
 };
@@ -112,13 +103,13 @@ enum eGameObjects
     GO_MAIN_GATE1               = 195650,
 
     GO_CHAMPIONS_LOOT           = 195709,
-    GO_CHAMPIONS_LOOT_H         = 195710,
+    GO_CHAMPIONS_LOOT_H	        = 195710,
 
     GO_EADRIC_LOOT              = 195374,
-    GO_EADRIC_LOOT_H            = 195375,
+    GO_EADRIC_LOOT_H		    = 195375,
 
     GO_PALETRESS_LOOT           = 195323,
-    GO_PALETRESS_LOOT_H         = 195324
+    GO_PALETRESS_LOOT_H	        = 195324
 };
 
 enum eVehicles
