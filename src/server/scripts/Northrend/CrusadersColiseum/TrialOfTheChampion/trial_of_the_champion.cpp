@@ -41,6 +41,8 @@ EndContentData */
 ######*/
 
 const Position SpawnPosition = {746.843, 695.68, 412.339, 4.70776};
+
+const Position SpawnPosition1 = {746.71,661.02,411.69, 4.66995};
 	
 enum eEnums
 {
@@ -66,6 +68,12 @@ enum IntroPhase
     FINISHED
 };
 
+enum Spells
+{
+    SPELL_SVALA_TRANSFORMING1                = 54140
+};
+
+
 enum Creatures
 {
     CREATURE_TRALL                        = 34994, 
@@ -74,7 +82,9 @@ enum Creatures
     CREATURE_LADY                         = 34992, 
     CREATURE_HIGHLORD                     = 34996,
 	CREATURE_ANNOUNCER                    = 35004
-};	
+};
+
+
 
 class npc_anstart : public CreatureScript
 {
@@ -302,7 +312,6 @@ public:
 		uint32 uiPhase;
 		uint32 uiTimer;
 
-		uint64 uiBlackKnightGUID;
 		uint64 uiVehicle1GUID;
 		uint64 uiVehicle2GUID;
 		uint64 uiVehicle3GUID;
@@ -503,13 +512,13 @@ public:
 						switch(i)
 						{
 							case 0:
-								pAdd->GetMotionMaster()->MoveFollow(pBoss,2.0f,M_PI);
+								pAdd->GetMotionMaster()->MoveFollow(pBoss,2.5f,M_PI);
 								break;
 							case 1:
-								pAdd->GetMotionMaster()->MoveFollow(pBoss,2.0f,M_PI / 2);
+								pAdd->GetMotionMaster()->MoveFollow(pBoss,2.5f,M_PI / 2);
 								break;
 							case 2:
-								pAdd->GetMotionMaster()->MoveFollow(pBoss,2.0f,M_PI / 2 + M_PI);
+								pAdd->GetMotionMaster()->MoveFollow(pBoss,2.5f,M_PI / 2 + M_PI);
 								break;
 						}
 					}
@@ -523,7 +532,7 @@ public:
 			DoScriptText(SAY_START3, me);
 			if (Creature* pBoss = me->SummonCreature(uiArgentChampion,SpawnPosition))
 			{
-
+				pBoss->GetMotionMaster()->MovePoint(1,746.71,661.02,411.69);
 				for (uint8 i = 0; i < 3; ++i)
 				{
 					if (Creature* pTrash = me->SummonCreature(NPC_ARGENT_LIGHWIELDER,SpawnPosition))
@@ -538,6 +547,14 @@ public:
 
 		void EnterCombat(Unit* pWho)
 		{
+			DoScriptText(SAY_START11, me);
+			me->SetReactState(REACT_PASSIVE);
+			if (Creature* pGhoul = me->SummonCreature(NPC_RISEN_JAEREN,742.835, 639.134, 411.571, 1.05731))
+			{
+				pGhoul->setFaction(14);
+			}
+			if (pInstance)
+				pInstance->SetData(DATA_AGRO_DONE,DONE);
 
 		}
 	
@@ -591,27 +608,16 @@ public:
 					pInstance->GetData(BOSS_ARGENT_CHALLENGE_E) == DONE ||
 					pInstance->GetData(BOSS_ARGENT_CHALLENGE_P) == DONE)
 				{
-					if (Unit* pBlackKnight = me->SummonCreature(VEHICLE_BLACK_KNIGHT,801.369507, 640.574280, 469.314362, 3.97124,TEMPSUMMON_DEAD_DESPAWN,180000))
-					{
-								uiBlackKnightGUID = pBlackKnight->GetGUID();
-								pBlackKnight->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-								pBlackKnight->SetUInt64Value(UNIT_FIELD_TARGET, me->GetGUID());
-								me->SetUInt64Value(UNIT_FIELD_TARGET, uiBlackKnightGUID);
-								if (GameObject* pGO = GameObject::GetGameObject(*me, pInstance->GetData64(DATA_MAIN_GATE)))
-                                   pInstance->HandleGameObject(pGO->GetGUID(),false);
-		    		}
+					me->SummonCreature(VEHICLE_BLACK_KNIGHT,801.369507, 640.574280, 469.314362, 3.97124,TEMPSUMMON_DEAD_DESPAWN,180000);
+					DoCast(me, SPELL_SVALA_TRANSFORMING1);
 					me->RemoveFlag(UNIT_FIELD_FLAGS,UNIT_FLAG_NON_ATTACKABLE);
 					me->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
 					me->SetReactState(REACT_AGGRESSIVE);
+					me->setFaction(2054);
 					DoScriptText(SAY_START5, me);
 				}
 
 			}
-		}
-	
-		void Reset()
-		{
-			uiBlackKnightGUID = 0;
 		}
 
 		void AggroAllPlayers(Creature* pTemp)
@@ -733,12 +739,12 @@ public:
 		return true;
 	}
 
-    bool OnGossipSelect(Player* pPlayer, Creature* pCreature, uint32 /*uiSender*/, uint32 uiAction)
+    bool OnGossipSelect(Player* pPlayer, Creature* pCreature, uint32 uiSender, uint32 uiAction)
     {
         if (uiAction == GOSSIP_ACTION_INFO_DEF+1)
         {
             pPlayer->CLOSE_GOSSIP_MENU();
-            CAST_AI(npc_announcer_toc5::npc_announcer_toc5AI, pCreature->AI())->StartEncounter();
+            CAST_AI(npc_announcer_toc5AI, pCreature->AI())->StartEncounter();
         }
 
         return true;
