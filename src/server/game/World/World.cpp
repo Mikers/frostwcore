@@ -1235,6 +1235,10 @@ void World::LoadConfigSettings(bool reload)
     m_configs[CONFIG_CHATLOG_ADDON] = sConfig.GetBoolDefault("ChatLogs.Addon", false);
     m_configs[CONFIG_CHATLOG_BGROUND] = sConfig.GetBoolDefault("ChatLogs.Battleground", false);
 
+	// Dungeon finder
+    m_configs[CONFIG_DUNGEON_FINDER_ENABLE] = sConfig.GetBoolDefault("DungeonFinder.Enable", true);
+
+
     sScriptMgr.OnConfigLoad(reload);
 }
 
