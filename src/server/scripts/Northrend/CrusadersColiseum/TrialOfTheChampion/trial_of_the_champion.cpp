@@ -81,7 +81,7 @@ class npc_anstart : public CreatureScript
 public:
     npc_anstart() : CreatureScript("npc_anstart") { }
 
-    CreatureAI* GetAI(Creature* pCreature)
+    CreatureAI* GetAI(Creature* pCreature) const
     {
         return new npc_anstartAI (pCreature);
     }
