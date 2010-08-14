@@ -1,0 +1,1 @@
+INSERT IGNORE INTO `command` (`name`, `security`, `help`) VALUES ('reload pet_spell_bonus_data', '3', '');
