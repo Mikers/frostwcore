@@ -30,7 +30,7 @@
 #include "GossipDef.h"
 #include "Player.h"
 #include "BattleGroundMgr.h"
-#include "LotteryMgr.h"
+//#include "LotteryMgr.h"
 
 bool GameEventMgr::CheckOneGameEvent(uint16 entry) const
 {
@@ -1178,12 +1178,12 @@ void GameEventMgr::UnApplyEvent(uint16 event_id)
 
 void GameEventMgr::ApplyNewEvent(uint16 event_id)
 {
-	if (std::strcmp(mGameEvent[event_id].description.c_str(), LOTTERY_EVENT) == 0)
+	/*if (std::strcmp(mGameEvent[event_id].description.c_str(), LOTTERY_EVENT) == 0)
 	{
         sLog.outDetail("GameEvent %u \"%s\" started.", event_id, mGameEvent[event_id].description.c_str());
 		sLotteryMgr.LotteryEvent();
         return;
-    }
+    }*/
 
     switch(sWorld.getConfig(CONFIG_EVENT_ANNOUNCE))
     {
