@@ -214,7 +214,7 @@ int Master::Run()
     sLog.outString( "      \\/_/\\/_/   \\/_/\\/_/\\/_/\\/_/\\/__/ `/___/> \\");
     sLog.outString( "                                 C O R E  /\\___/");
     sLog.outString( "http://TrinityCore.org                    \\/__/\n");
-    sLog.outString( "Non-Blizzlike Core                              \n");
+    sLog.outString( "FrostCore                              \n");
 
     /// worldd PID file creation
     std::string pidfile = sConfig.GetStringDefault("PidFile", "");
