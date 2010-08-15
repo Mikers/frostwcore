@@ -3,7 +3,7 @@ UPDATE `creature_template` SET `mechanic_immune_mask` = 634339327 WHERE `entry` 
 UPDATE `creature_template` SET  `flags_extra` = 2 WHERE `entry` = 36672;
 UPDATE `gameobject` SET `phaseMask` = '1' WHERE `gameobject`.`id` IN (202242,202243,202244,202245,202235,202223,202246);
 
-INSERT INTO creature_template_addon
+REPLACE INTO creature_template_addon
    (`entry`, `path_id`, `mount`, `bytes1`, `bytes2`, `emote`, `auras`)
 VALUES
    (37813, 0, 0, 0, 1, 0, '72242 0');
