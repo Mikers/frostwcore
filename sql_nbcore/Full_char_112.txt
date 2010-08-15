@@ -41,3 +41,16 @@ CREATE TABLE `cheaters` (
   KEY `idx_Count` (`count`),
   KEY `idx_Player` (`player`)
 ) ENGINE=InnoDB AUTO_INCREMENT=30 DEFAULT CHARSET=utf8;
+
+DROP TABLE IF EXISTS `lottery_jackpot`;
+DROP TABLE IF EXISTS `lottery_data`;
+create table `lottery_jackpot` (
+	`jackpot` double 
+); 
+
+
+
+create table `lottery_data` (
+	`charId` double ,
+	`number` double 
+); 
