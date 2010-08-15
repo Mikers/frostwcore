@@ -133,8 +133,8 @@ bool ChatHandler::HandleServerInfoCommand(const char* /*args*/)
     std::string uptime = secsToTimeString(sWorld.GetUptime());
     uint32 updateTime = sWorld.GetUpdateTime();
 
-    //PSendSysMessage(_FULLVERSION);
-    PSendSysMessage("Non-Blizzlike Core 2010, based on TrinityCore");
+    PSendSysMessage(_FULLVERSION);
+    //PSendSysMessage("FrostCore, based on TrinityCore");
     PSendSysMessage(LANG_CONNECTED_PLAYERS, PlayersNum, MaxPlayersNum);
     PSendSysMessage(LANG_CONNECTED_USERS, activeClientsNum, maxActiveClientsNum, queuedClientsNum, maxQueuedClientsNum);
     PSendSysMessage(LANG_UPTIME, uptime.c_str());
