@@ -160,6 +160,7 @@ struct instance_trial_of_the_champion : public ScriptedInstance
 			case NPC_RISEN_JAEREN:
                 if (TeamInInstance == ALLIANCE)
                     pCreature->UpdateEntry(NPC_RISEN_ARELAS, HORDE);
+
                 break;	
             // Coliseum Announcer || Just NPC_JAEREN must be spawned.
             case NPC_JAEREN:
@@ -169,7 +170,10 @@ struct instance_trial_of_the_champion : public ScriptedInstance
                 break;
             case NPC_JAEREN_AN:
                 if (TeamInInstance == ALLIANCE)
+				{
                     pCreature->UpdateEntry(NPC_ARELAS_AN,ALLIANCE);
+					pCreature->SetPhaseMask(128, true);
+				}
                 break;				
             case VEHICLE_ARGENT_WARHORSE:
             case VEHICLE_ARGENT_BATTLEWORG:
