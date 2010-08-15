@@ -1821,8 +1821,8 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
 
     if ((GetSession()->GetSecurity() < SEC_GAMEMASTER) && sDisableMgr.IsDisabledFor(DISABLE_TYPE_MAP, mapid, this))
     {
-        sLog.outError("Player %s tried to enter a forbidden map", GetName());
-        return false;
+        sLog.outError("Player %s tried to enter a forbidden map %u", GetName(), mapid);
+        SendTransferAborted(mapid, TRANSFER_ABORT_MAP_NOT_ALLOWED);
     }
 
     // preparing unsummon pet if lost (we must get pet before teleportation or will not find it later)

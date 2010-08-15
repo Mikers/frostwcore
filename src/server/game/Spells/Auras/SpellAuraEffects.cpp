@@ -1806,7 +1806,7 @@ void AuraEffect::PeriodicTick(Unit * target, Unit * caster) const
                 case 23170: // Brood Affliction: Bronze
                     target->CastSpell(target, 23171, true);
                     return;
-                case 70842: // Mana Barrier (hack)
+                /*case 70842: // Mana Barrier (hack)
                 {
                     uint32 uiHpDiff = caster->GetMaxHealth() - caster->GetHealth();
                     uint32 uiCurrentMana = caster->GetPower(POWER_MANA);
@@ -1816,7 +1816,7 @@ void AuraEffect::PeriodicTick(Unit * target, Unit * caster) const
                         caster->ModifyPower(POWER_MANA, -uiHpDiff);
                     } else caster->RemoveAurasDueToSpell(70842);
                     return;
-                }
+                }*/
             }
             TriggerSpell(target, caster);
             break;
