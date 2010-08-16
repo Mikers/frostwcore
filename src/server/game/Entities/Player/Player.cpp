@@ -1476,16 +1476,7 @@ void Player::Update(uint32 p_time)
     HandleDrowning(p_time);
 
     //Handle detect stealth players
-    if (m_DetectInvTimer > 0)
-    {
-        if (p_time >= m_DetectInvTimer)
-        {
-            HandleStealthedUnitsDetection();
-            m_DetectInvTimer = 3000;
-        }
-        else
-            m_DetectInvTimer -= p_time;
-    }
+    HandleStealthedUnitsDetection();
 
     // Played time
     if (now > m_Last_tick)

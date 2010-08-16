@@ -12129,19 +12129,24 @@ bool Unit::canDetectStealthOf(Unit const* target, float distance) const
         if ((*iter)->GetCasterGUID() == GetGUID())
             return true;
 
-    //Visible distance based on stealth value (stealth rank 4 300MOD, 10.5 - 3 = 7.5)
-    float visibleDistance = 80.0f + 9.0f;
-    //Visible distance is modified by -Level Diff (every level diff = 1.0f in visible distance)
-    visibleDistance += float(getLevel() - getLevelForTarget(target)) * 2.5f - target->GetTotalAuraModifier(SPELL_AURA_MOD_STEALTH) / 5.0f;
-    //-Stealth Mod(positive like Master of Deception) and Stealth Detection(negative like paranoia)
+    //Visible distance based on stealth value (stealth hunter pet 300MOD, 10.5 - 3 = 7.5) new values for rogue stealth and druid prowl 400MOD 10.5 - 4 = 6.5f
+    float visibleDistance = 10.5f;
+
+    visibleDistance -= target->GetTotalAuraModifier(SPELL_AURA_MOD_STEALTH)/100.0f;
+
+	//Visible distance is modified by -Level Diff (every level diff = 1.0f in visible distance)
+    visibleDistance += float(getLevel() - target->getLevel()); 
+    
+	//-Stealth Mod(positive like Master of Deception) and Stealth Detection(negative like paranoia)
     //based on wowwiki every 5 mod we have 1 more level diff in calculation
-    visibleDistance += GetTotalAuraModifier(SPELL_AURA_MOD_DETECT) / 2.0f - target->GetTotalAuraModifier(SPELL_AURA_MOD_STEALTH_LEVEL) / 2.0f;
-    visibleDistance = visibleDistance > MAX_PLAYER_STEALTH_DETECT_RANGE ? MAX_PLAYER_STEALTH_DETECT_RANGE : visibleDistance;
+    visibleDistance += GetTotalAuraModifier(SPELL_AURA_MOD_DETECT) / 5.0f - target->GetTotalAuraModifier(SPELL_AURA_MOD_STEALTH_LEVEL) / 5.0f; 
+    
+	visibleDistance = visibleDistance > MAX_PLAYER_STEALTH_DETECT_RANGE ? MAX_PLAYER_STEALTH_DETECT_RANGE : visibleDistance;
 
     if (!HasInArc(M_PI, target)) //behind
-    visibleDistance /= 3.0f;
+        visibleDistance /= 4; 
 
-    return distance < visibleDistance;
+	return distance < visibleDistance;
 }
 
 void Unit::SetVisibility(UnitVisibility x)
