@@ -864,6 +864,13 @@ enum CharDeleteMethod
     CHAR_DELETE_UNLINK = 1                       // The character gets unlinked from the account, 
                                                  // the name gets freed up and appears as deleted ingame
 };
+enum CurrencyItems
+{
+    ITEM_HONOR_POINTS_ID    = 43308,
+    ITEM_ARENA_POINTS_ID    = 43307
+};
+
+
 
 class PlayerTaxi
 {
@@ -1978,6 +1985,19 @@ class Player : public Unit, public GridObject<Player>
         void ModifyHonorPoints(int32 value);
         void ModifyArenaPoints(int32 value);
         uint32 GetMaxPersonalArenaRatingRequirement(uint32 minarenaslot);
+		void SetHonorPoints(uint32 value)
+        {
+            SetUInt32Value(PLAYER_FIELD_HONOR_CURRENCY, value);
+            if (value)
+                AddKnownCurrency(ITEM_HONOR_POINTS_ID); // Arena Points
+        }
+        void SetArenaPoints(uint32 value)
+        {
+            SetUInt32Value(PLAYER_FIELD_ARENA_CURRENCY, value);
+            if (value)
+                AddKnownCurrency(ITEM_ARENA_POINTS_ID); // Arena Points
+        }
+
 
         //End of PvP System
 
@@ -2636,7 +2656,7 @@ class Player : public Unit, public GridObject<Player>
         void SendRefundInfo(Item* item);
         void RefundItem(Item* item);
 
-        void UpdateKnownCurrencies(uint32 itemId, bool apply);
+        void AddKnownCurrency(uint32 itemId);
         int32 CalculateReputationGain(uint32 creatureOrQuestLevel, int32 rep, int32 faction, bool for_quest, bool noQuestBonus = false);
         void AdjustQuestReqItemCount(Quest const* pQuest, QuestStatusData& questStatusData);
 

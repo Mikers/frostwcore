@@ -1199,7 +1199,7 @@ void LootTemplate::Process(Loot& loot, LootStore const& store, Player* loot_owne
                         Player* pPlayer = itr->getSource();
                         if(pPlayer && (pPlayer->GetMap() == loot_owner->GetMap()))
                         {
-                            uint8 msg = loot_owner->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, i->itemid, count, 0);
+                            uint8 msg = pPlayer->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, i->itemid, count, 0);
                             if(msg == EQUIP_ERR_OK)
                             {
                                 Item* pItem = pPlayer->StoreNewItem(dest, i->itemid, true, Item::GenerateItemRandomPropertyId(i->itemid));
