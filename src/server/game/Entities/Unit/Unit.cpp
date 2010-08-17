@@ -12129,24 +12129,29 @@ bool Unit::canDetectStealthOf(Unit const* target, float distance) const
         if ((*iter)->GetCasterGUID() == GetGUID())
             return true;
 
-    //Visible distance based on stealth value (stealth hunter pet 300MOD, 10.5 - 3 = 7.5) new values for rogue stealth and druid prowl 400MOD 10.5 - 4 = 6.5f
-    float visibleDistance = 10.5f;
-
-    visibleDistance -= target->GetTotalAuraModifier(SPELL_AURA_MOD_STEALTH)/100.0f;
-
-	//Visible distance is modified by -Level Diff (every level diff = 1.0f in visible distance)
-    visibleDistance += float(getLevel() - target->getLevel()); 
-    
-	//-Stealth Mod(positive like Master of Deception) and Stealth Detection(negative like paranoia)
+    //Visible distance based on stealth value (stealth rank 4 300MOD, 10.5 - 3 = 7.5)
+    float visibleDistance = 10.5f - target->GetTotalAuraModifier(SPELL_AURA_MOD_STEALTH) / 100.0f;
+    //Visible distance is modified by -Level Diff (every level diff = 1.0f in visible distance)
+    visibleDistance += int32(getLevelForTarget(target)) - int32(target->getLevelForTarget(this));
+    //-Stealth Mod(positive like Master of Deception) and Stealth Detection(negative like paranoia)
     //based on wowwiki every 5 mod we have 1 more level diff in calculation
-    visibleDistance += GetTotalAuraModifier(SPELL_AURA_MOD_DETECT) / 5.0f - target->GetTotalAuraModifier(SPELL_AURA_MOD_STEALTH_LEVEL) / 5.0f; 
-    
-	visibleDistance = visibleDistance > MAX_PLAYER_STEALTH_DETECT_RANGE ? MAX_PLAYER_STEALTH_DETECT_RANGE : visibleDistance;
+    visibleDistance += (float)(GetTotalAuraModifier(SPELL_AURA_MOD_DETECT) - target->GetTotalAuraModifier(SPELL_AURA_MOD_STEALTH_LEVEL)) / 5.0f;
+    visibleDistance = visibleDistance > MAX_PLAYER_STEALTH_DETECT_RANGE ? MAX_PLAYER_STEALTH_DETECT_RANGE : visibleDistance;
 
-    if (!HasInArc(M_PI, target)) //behind
-        visibleDistance /= 4; 
+    if (!HasInArc(M_PI/6, target))          // (M_PI/3 - M_PI/6) -75% detection distance
+	{
+	    if (!HasInArc(M_PI/3, target))      // (M_PI - M_PI/3) -50% detection distance
+		{
+			if (!HasInArc(M_PI, target))    // (over M_PI) -25% detection distance
+			{
+				visibleDistance *= 0.25f;
+			}
+			else visibleDistance *= 0.5f;
+		}
+		else visibleDistance *= 0.75f;
+	}
 
-	return distance < visibleDistance;
+    return distance < visibleDistance;
 }
 
 void Unit::SetVisibility(UnitVisibility x)
